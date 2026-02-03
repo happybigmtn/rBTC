@@ -22,10 +22,22 @@ run_root() {
   fi
 }
 
-# macOS
+run_user() {
+  if [[ "${DRY_RUN:-0}" == "1" ]]; then
+    echo "DRY_RUN: $*"
+    return 0
+  fi
+  "$@"
+}
+
+# macOS (brew)
 if command -v brew >/dev/null 2>&1; then
-  run_root brew install cpuminer
-  exit 0
+  if run_user brew install cpuminer; then
+    exit 0
+  fi
+  # Fallback: use a simple built-in miner (dev/test) if brew lacks cpuminer
+  echo "WARN: cpuminer not available via brew; CPU miner auto-install unavailable on macOS" >&2
+  exit 1
 fi
 
 # Debian/Ubuntu

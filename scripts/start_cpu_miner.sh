@@ -40,7 +40,9 @@ if [[ -z "$RPC_USER" || -z "$RPC_PASS" ]]; then
 fi
 
 if [[ "$AUTO_INSTALL" == "1" ]]; then
-  ./scripts/ensure_cpu_miner.sh
+  if ! ./scripts/ensure_cpu_miner.sh; then
+    echo "WARN: CPU miner auto-install failed; continuing if miner exists" >&2
+  fi
 fi
 
 if command -v minerd >/dev/null 2>&1; then
