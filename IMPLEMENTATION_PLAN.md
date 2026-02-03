@@ -38,15 +38,15 @@
 ## P2 — Upstream Tag Discovery + Authenticity Verification
 
 ### P2-T1 Latest upstream release tag discovery
-- [ ] Add `scripts/fetch_upstream_release.sh` to resolve latest release tag deterministically
+- [x] Add `scripts/fetch_upstream_release.sh` to resolve latest release tag deterministically
 
 **Required Tests:**
 - `./scripts/tests/test_fetch_upstream_release.sh`
   - Outputs a single `vX.Y.Z` tag
 
 ### P2-T2 Upstream release verification
-- [ ] Add `scripts/verify_upstream_release.sh` to verify checksums/signatures (and Guix if enabled)
-- [ ] Write JSON report to `reports/verification-<tag>.json`
+- [x] Add `scripts/verify_upstream_release.sh` to verify checksums/signatures (and Guix if enabled)
+- [x] Write JSON report to `reports/verification-<tag>.json`
 
 **Required Tests:**
 - `./scripts/tests/test_verify_upstream_release.sh`
@@ -56,17 +56,17 @@
 ## P3 — Build + Manifest
 
 ### P3-T1 Build from tag + patch
-- [ ] Add `scripts/build_from_tag.sh` to apply patch and build binaries
-- [ ] Emit build log with tag and patch hash
+- [x] Add `scripts/build_from_tag.sh` to apply patch and build binaries
+- [x] Emit build log with tag and patch hash
 
 **Required Tests:**
 - `./scripts/tests/test_build_from_tag.sh`
   - Builds produce `bitcoind` and `bitcoin-cli` in `./build/`
 
 ### P3-T2 Manifest generation + schema
-- [ ] Add `schemas/manifest.schema.json`
-- [ ] Add `scripts/make_update_manifest.sh`
-- [ ] Add `scripts/validate_manifest.sh`
+- [x] Add `schemas/manifest.schema.json`
+- [x] Add `scripts/make_update_manifest.sh`
+- [x] Add `scripts/validate_manifest.sh`
 
 **Required Tests:**
 - `./scripts/tests/test_manifest_generation.sh`
@@ -75,7 +75,7 @@
 ## P4 — Local Binary Verification (Fail Closed)
 
 ### P4-T1 Local binary verifier
-- [ ] Add `scripts/verify_local_binary.sh` to enforce manifest + patch hash + evidence
+- [x] Add `scripts/verify_local_binary.sh` to enforce manifest + patch hash + evidence
 
 **Required Tests:**
 - `./scripts/tests/test_verify_local_binary.sh`
@@ -85,8 +85,8 @@
 ## P5 — Auto Updater + Rollback
 
 ### P5-T1 Auto updater with atomic swap
-- [ ] Add `scripts/updater.sh` to fetch, verify, build, and atomically swap versions
-- [ ] Add `references/UPDATE_PROTOCOL.md`
+- [x] Add `scripts/updater.sh` to fetch, verify, build, and atomically swap versions
+- [x] Add `references/UPDATE_PROTOCOL.md`
 
 **Required Tests:**
 - `./scripts/tests/test_updater_atomic_swap.sh`
@@ -96,8 +96,8 @@
 ## P6 — Agent Mining Quickstart
 
 ### P6-T1 Solo mining script
-- [ ] Add `scripts/mine_solo.sh` for dev chain mining
-- [ ] Ensure logs show mined height and coinbase address
+- [x] Add `scripts/mine_solo.sh` for dev chain mining
+- [x] Ensure logs show mined height and coinbase address
 
 **Required Tests:**
 - `./scripts/tests/test_mine_solo.sh`
@@ -106,8 +106,8 @@
 ## P7 — Skill Packaging + Clawhub
 
 ### P7-T1 Skill bundle packaging
-- [ ] Ensure `skill/` contains SKILL + scripts + references
-- [ ] Add Clawhub metadata file if required
+- [x] Ensure `skill/` contains SKILL + scripts + references
+- [x] Add Clawhub metadata file if required
 
 **Required Tests:**
 - `./scripts/tests/test_skill_bundle.sh`

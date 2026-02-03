@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "rBitcoin Update Manifest",
+  "type": "object",
+  "required": ["upstream_tag", "patch_hash", "artifacts", "verification_report", "timestamp"],
+  "properties": {
+    "upstream_tag": {"type": "string"},
+    "patch_hash": {"type": "string"},
+    "verification_report": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string"},
+          "sha256": {"type": "string"}
+        }
+      }
+    }
+  }
+}

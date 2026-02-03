@@ -13,3 +13,7 @@ reports/*.json
 
 # Logs
 *.log
+
+# Caches
+.cache/
+.gnupg/

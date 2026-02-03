@@ -21,7 +21,7 @@ cat <<'PATCH' > "$TMPDIR/allowed.patch"
 +bar
 PATCH
 
-ALLOWLIST_FILE="$ALLOWLIST" "$SCRIPT" "$TMPDIR/allowed.patch"
+ALLOWLIST_FILE="$ALLOWLIST" "$SCRIPT" "$TMPDIR/allowed.patch" >/tmp/rbtc_patch_allow.log 2>&1
 
 # Disallowed patch
 cat <<'PATCH' > "$TMPDIR/disallowed.patch"
@@ -32,7 +32,7 @@ cat <<'PATCH' > "$TMPDIR/disallowed.patch"
 +bar
 PATCH
 
-if ALLOWLIST_FILE="$ALLOWLIST" "$SCRIPT" "$TMPDIR/disallowed.patch"; then
+if ALLOWLIST_FILE="$ALLOWLIST" "$SCRIPT" "$TMPDIR/disallowed.patch" >/tmp/rbtc_patch_deny.log 2>&1; then
   echo "FAIL: disallowed patch should have been rejected"
   exit 1
 fi
