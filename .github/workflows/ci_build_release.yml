@@ -1,0 +1,99 @@
+name: ci-build-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Upstream Bitcoin Core tag (e.g., v30.2). Leave empty to auto-detect latest."
+        required: false
+        default: ""
+      artifacts:
+        description: "Comma-separated artifacts to verify (optional)."
+        required: false
+        default: ""
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            pkg-config \
+            git \
+            curl \
+            jq \
+            gpg \
+            python3 \
+            libevent-dev \
+            libboost-dev \
+            libboost-filesystem-dev \
+            libboost-system-dev \
+            libboost-thread-dev \
+            libboost-chrono-dev \
+            libboost-test-dev \
+            libsqlite3-dev \
+            libzmq3-dev
+          sudo apt-get install -y libdb++-dev || true
+
+      - name: Resolve upstream tag
+        id: resolve
+        run: |
+          if [[ -n "${{ github.event.inputs.tag }}" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG=$(./scripts/fetch_upstream_release.sh)
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set verification artifacts
+        run: |
+          if [[ -n "${{ github.event.inputs.artifacts }}" ]]; then
+            echo "ARTIFACTS=${{ github.event.inputs.artifacts }}" >> "$GITHUB_ENV"
+          else
+            VERSION="${TAG#v}"
+            echo "ARTIFACTS=bitcoin-${VERSION}-x86_64-linux-gnu.tar.gz" >> "$GITHUB_ENV"
+          fi
+
+      - name: Verify upstream release
+        env:
+          ARTIFACTS: ${{ env.ARTIFACTS }}
+        run: |
+          ./scripts/verify_upstream_release.sh "$TAG"
+
+      - name: Enforce patch scope
+        run: ./scripts/enforce_patch_scope.sh ./patch/immutable.patch
+
+      - name: Build from tag
+        env:
+          BUILD_JOBS: 2
+          CMAKE_BUILD_DIR: build-cmake-linux
+        run: ./scripts/build_from_tag.sh "$TAG"
+
+      - name: Make update manifest
+        run: ./scripts/make_update_manifest.sh "$TAG"
+
+      - name: Validate manifest
+        run: ./scripts/validate_manifest.sh "./manifests/manifest-$TAG.json"
+
+      - name: Verify local binary
+        run: ./scripts/verify_local_binary.sh ./build/bitcoind "./manifests/manifest-$TAG.json"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rbtc-${{ steps.resolve.outputs.tag }}-linux
+          path: |
+            build/bitcoind
+            build/bitcoin-cli
+            build/build.log
+            manifests/manifest-${{ steps.resolve.outputs.tag }}.json
+            manifests/manifest.json
+            reports/verification-${{ steps.resolve.outputs.tag }}.json

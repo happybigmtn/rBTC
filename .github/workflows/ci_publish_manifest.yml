@@ -1,0 +1,93 @@
+name: ci-publish-manifest
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Upstream Bitcoin Core tag (e.g., v30.2). Leave empty to auto-detect latest."
+        required: false
+        default: ""
+
+jobs:
+  publish-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            pkg-config \
+            git \
+            curl \
+            jq \
+            gpg \
+            python3 \
+            libevent-dev \
+            libboost-dev \
+            libboost-filesystem-dev \
+            libboost-system-dev \
+            libboost-thread-dev \
+            libboost-chrono-dev \
+            libboost-test-dev \
+            libsqlite3-dev \
+            libzmq3-dev
+          sudo apt-get install -y libdb++-dev || true
+
+      - name: Resolve upstream tag
+        id: resolve
+        run: |
+          if [[ -n "${{ github.event.inputs.tag }}" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG=$(./scripts/fetch_upstream_release.sh)
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Verify upstream release
+        run: ./scripts/verify_upstream_release.sh "$TAG"
+
+      - name: Enforce patch scope
+        run: ./scripts/enforce_patch_scope.sh ./patch/immutable.patch
+
+      - name: Build from tag
+        env:
+          BUILD_JOBS: 2
+          CMAKE_BUILD_DIR: build-cmake-linux
+        run: ./scripts/build_from_tag.sh "$TAG"
+
+      - name: Make update manifest
+        run: ./scripts/make_update_manifest.sh "$TAG"
+
+      - name: Validate manifest
+        run: ./scripts/validate_manifest.sh "./manifests/manifest-$TAG.json"
+
+      - name: Prepare publish bundle
+        run: |
+          mkdir -p publish/manifests publish/reports
+          cp -f "manifests/manifest-$TAG.json" publish/manifests/
+          cp -f "manifests/manifest.json" publish/manifests/
+          cp -f "reports/verification-$TAG.json" publish/reports/
+
+      - name: Publish to manifests branch
+        env:
+          GIT_AUTHOR_NAME: rbtc-ci
+          GIT_AUTHOR_EMAIL: rbtc-ci@users.noreply.github.com
+          GIT_COMMITTER_NAME: rbtc-ci
+          GIT_COMMITTER_EMAIL: rbtc-ci@users.noreply.github.com
+        run: |
+          git checkout --orphan manifests
+          git rm -rf .
+          mkdir -p manifests reports
+          cp -f publish/manifests/* manifests/
+          cp -f publish/reports/* reports/
+          git add -f manifests reports
+          git commit -m "Publish manifest for $TAG"
+          git push -f origin manifests
