@@ -3,39 +3,21 @@
 ## Purpose
 Set up, verify, and mine the rBitcoin chain (rebased from Bitcoin Core) with minimal friction and verifiable upstream pinning.
 
+## Quickstart
+
+```bash
+./install.sh vX.Y
+```
+
 ## One-Command Onboarding (CPU Miners)
 
 ```bash
 # Install, verify, build, run
-./scripts/agent_install.sh vX.Y
+./install.sh vX.Y
 
-# Install + start CPU miner (auto-installs cpuminer if missing)
-START_MINER=1 ./scripts/agent_install.sh vX.Y
-```
-
-## Quickstart (Manual)
-
-```bash
-# 1) Discover latest upstream release tag
-./scripts/fetch_upstream_release.sh
-
-# 2) Verify upstream release authenticity
-./scripts/verify_upstream_release.sh vX.Y
-
-# 3) Build from upstream tag + immutable patch
-./scripts/build_from_tag.sh vX.Y
-
-# 4) Generate update manifest
-./scripts/make_update_manifest.sh vX.Y
-
-# 5) Verify local binary provenance
-./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest.json
-
-# 6) Run node (refuse-to-run gate)
-./scripts/run_node.sh --datadir ./data --network main
-
-# 7) Mine a block on dev chain
-./scripts/mine_solo.sh --address rBTC_ADDRESS --network regtest
+# Override CPU usage (default ~50%)
+MINER_CPU_PERCENT=25 ./install.sh vX.Y
+MINER_THREADS=2 ./install.sh vX.Y
 ```
 
 ## Verify (Auditor Path)
@@ -58,14 +40,9 @@ START_MINER=1 ./scripts/agent_install.sh vX.Y
 
 ## Mine
 
-Dev (single-node):
-
 ```bash
 ./scripts/mine_solo.sh --address rBTC_ADDRESS --network regtest
 ```
-
-Fleet mining:
-- See `references/MINING_GUIDE.md` for RPC + miner setup instructions.
 
 ## Update
 

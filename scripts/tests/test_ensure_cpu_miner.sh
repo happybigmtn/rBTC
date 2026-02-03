@@ -26,7 +26,7 @@ exit 1
 BIN
 chmod +x "$TMPDIR/brew"
 
-DRY_RUN=1 PATH="$TMPDIR:$PATH" ./scripts/ensure_cpu_miner.sh >/tmp/rbtc_ensure_miner2.txt || true
+DRY_RUN=1 DISABLE_SOURCE_BUILD=1 PATH="$TMPDIR:$PATH" ./scripts/ensure_cpu_miner.sh >/tmp/rbtc_ensure_miner2.txt || true
 if ! grep -q "brew install cpuminer" /tmp/rbtc_ensure_miner2.txt; then
   echo "FAIL: ensure_cpu_miner did not choose brew in dry run"
   exit 1

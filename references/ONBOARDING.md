@@ -14,9 +14,13 @@ This will:
 - Start the node
 - Attempt CPU miner install (if available)
 
-## Start CPU Miner
+## CPU Usage Caps
+By default the CPU miner uses **~50%** of cores. Override with:
 
-By default, `install.sh` attempts to start CPU mining. If the miner cannot be installed (e.g. missing package), it will continue without mining.
+```bash
+MINER_CPU_PERCENT=25 ./install.sh v30.2
+MINER_THREADS=2 ./install.sh v30.2
+```
 
 ## Fleet Setup (RPC access)
 By default, RPC is bound to all interfaces but allows only localhost.
@@ -36,5 +40,5 @@ This emits a report in `reports/agent-verify-v30.2.json`.
 
 ## Troubleshooting
 - Ensure `gpg` is installed
-- Linux/WSL: CPU miner auto-installs via package manager
-- macOS: Homebrew may not include `cpuminer`; install manually if needed
+- Linux/WSL: CPU miner auto-installs via package manager or source build
+- macOS: Homebrew may not include `cpuminer`; source build is attempted

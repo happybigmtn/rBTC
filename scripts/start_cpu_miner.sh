@@ -5,6 +5,8 @@ DATADIR="${DATADIR:-$HOME/.rbitcoin}"
 NETWORK="${NETWORK:-main}"
 ADDRESS=""
 AUTO_INSTALL="${AUTO_INSTALL:-1}"
+MINER_THREADS="${MINER_THREADS:-}"
+MINER_CPU_PERCENT="${MINER_CPU_PERCENT:-50}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -14,6 +16,10 @@ while [[ $# -gt 0 ]]; do
       NETWORK="$2"; shift 2;;
     --address)
       ADDRESS="$2"; shift 2;;
+    --threads)
+      MINER_THREADS="$2"; shift 2;;
+    --cpu-percent)
+      MINER_CPU_PERCENT="$2"; shift 2;;
     *)
       shift;;
   esac
@@ -45,13 +51,41 @@ if [[ "$AUTO_INSTALL" == "1" ]]; then
   fi
 fi
 
+MINER=""
 if command -v minerd >/dev/null 2>&1; then
   MINER=minerd
 elif command -v cpuminer >/dev/null 2>&1; then
   MINER=cpuminer
-else
+elif [[ -x "$HOME/.local/bin/minerd" ]]; then
+  MINER="$HOME/.local/bin/minerd"
+elif [[ -x "$HOME/.local/bin/cpuminer" ]]; then
+  MINER="$HOME/.local/bin/cpuminer"
+fi
+
+if [[ -z "$MINER" ]]; then
   echo "FAIL: no CPU miner found. Install cpuminer/minerd." >&2
   exit 1
+fi
+
+# Compute threads if not explicitly set
+if [[ -z "$MINER_THREADS" ]]; then
+  if command -v nproc >/dev/null 2>&1; then
+    cores=$(nproc)
+  elif command -v getconf >/dev/null 2>&1; then
+    cores=$(getconf _NPROCESSORS_ONLN)
+  else
+    cores=$(sysctl -n hw.ncpu 2>/dev/null || echo 1)
+  fi
+
+  # Clamp percent 1-100
+  if [[ -z "$MINER_CPU_PERCENT" ]]; then
+    MINER_CPU_PERCENT=50
+  fi
+  if (( MINER_CPU_PERCENT < 1 )); then MINER_CPU_PERCENT=1; fi
+  if (( MINER_CPU_PERCENT > 100 )); then MINER_CPU_PERCENT=100; fi
+
+  MINER_THREADS=$(( (cores * MINER_CPU_PERCENT + 99) / 100 ))
+  if (( MINER_THREADS < 1 )); then MINER_THREADS=1; fi
 fi
 
 if [[ -z "$ADDRESS" ]]; then
@@ -62,4 +96,6 @@ if [[ -z "$ADDRESS" ]]; then
   ADDRESS=$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" getnewaddress)
 fi
 
-$MINER -a sha256d -o http://127.0.0.1:"$RPC_PORT" -u "$RPC_USER" -p "$RPC_PASS"
+echo "Starting CPU miner with $MINER_THREADS thread(s) (~${MINER_CPU_PERCENT}% CPU)"
+
+$MINER -a sha256d -t "$MINER_THREADS" -o http://127.0.0.1:"$RPC_PORT" -u "$RPC_USER" -p "$RPC_PASS"
