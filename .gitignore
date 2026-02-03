@@ -1,0 +1,15 @@
+# Codex local state
+.codex/
+
+# Build artifacts
+build/
+
+# Node data
+/data/
+
+# Generated manifests/reports (keep directories, not files)
+manifests/*.json
+reports/*.json
+
+# Logs
+*.log
