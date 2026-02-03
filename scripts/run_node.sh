@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DATADIR="${DATADIR:-./data}"
-NETWORK="${NETWORK:-regtest}"
+NETWORK="${NETWORK:-main}"
 BITCOIND="${BITCOIND:-./build/bitcoind}"
 
 while [[ $# -gt 0 ]]; do
@@ -23,6 +23,11 @@ fi
 
 mkdir -p "$DATADIR"
 
-$BITCOIND -$NETWORK -datadir="$DATADIR" -daemon
+CHAIN_FLAG=""
+if [[ "$NETWORK" != "main" && "$NETWORK" != "mainnet" ]]; then
+  CHAIN_FLAG="-$NETWORK"
+fi
+
+$BITCOIND $CHAIN_FLAG -datadir="$DATADIR" -daemon
 
 echo "Node started ($NETWORK) with datadir=$DATADIR"
