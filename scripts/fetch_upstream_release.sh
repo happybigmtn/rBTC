@@ -31,8 +31,8 @@ if [[ -z "$tag" || "$tag" == "null" ]]; then
   exit 1
 fi
 
-# Basic sanity: must look like vX.Y.Z
-if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+# Basic sanity: must look like vX.Y or vX.Y.Z
+if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
   echo "FAIL: unexpected tag format: $tag" >&2
   exit 1
 fi

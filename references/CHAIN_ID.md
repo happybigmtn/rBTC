@@ -1,7 +1,7 @@
 # Chain Identity (rBTC)
 
 ## Status
-Locked for rBitcoin v0 (genesis values computed when patch is generated).
+Locked for rBitcoin v0 (genesis values computed).
 
 ## Naming
 - Chain name: rBitcoin
@@ -24,12 +24,14 @@ Locked for rBitcoin v0 (genesis values computed when patch is generated).
 
 ## Genesis
 - Timestamp message: "rBitcoin rebased from genesis"
-- Timestamp (unix): TBD (set by genesis generator)
-- Nonce: TBD (set by genesis generator)
-- Difficulty bits: TBD (set by genesis generator)
-- Merkle root: TBD (set by genesis generator)
-- Hash: TBD (set by genesis generator)
+- Timestamp (unix): 1770140165
+- Nonce: 0
+- Difficulty bits: 0x207fffff
+- Merkle root: b3830cd05f183ef0835f65a5490b93600612377d85178a8a9593d18cd910d59c
+- Hash: 292cb2dd254cdcee717850a1f57a8150088baf1466129d3d9ea107bbf851110e
+
+## Files
+- `references/GENESIS.json`
 
 ## Notes
 - Only chain-identity constants are allowed to change via the immutable patch.
-- All fields above are finalized for v0; genesis computed values are derived from the timestamp message and target bits.
