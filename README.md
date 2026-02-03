@@ -10,15 +10,15 @@ rBitcoin is a Bitcoin Core fork from genesis that is **upstream-pinned** to offi
 
 This will verify, build, run the node, and attempt to start CPU mining.
 
-## CPU Usage Caps
+## CPU Usage Caps (Defaults)
 
-By default, the miner uses **~50%** of CPU cores. You can override:
+Default mining limits: **25% CPU** and **max 2 threads**.
+
+Override:
 
 ```bash
-# Use 25% of CPU
 MINER_CPU_PERCENT=25 ./install.sh v30.2
-
-# Or specify exact threads
+MINER_MAX_THREADS=2 ./install.sh v30.2
 MINER_THREADS=2 ./install.sh v30.2
 ```
 

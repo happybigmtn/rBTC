@@ -6,7 +6,8 @@ NETWORK="${NETWORK:-main}"
 ADDRESS=""
 AUTO_INSTALL="${AUTO_INSTALL:-1}"
 MINER_THREADS="${MINER_THREADS:-}"
-MINER_CPU_PERCENT="${MINER_CPU_PERCENT:-50}"
+MINER_CPU_PERCENT="${MINER_CPU_PERCENT:-25}"
+MINER_MAX_THREADS="${MINER_MAX_THREADS:-2}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -79,13 +80,21 @@ if [[ -z "$MINER_THREADS" ]]; then
 
   # Clamp percent 1-100
   if [[ -z "$MINER_CPU_PERCENT" ]]; then
-    MINER_CPU_PERCENT=50
+    MINER_CPU_PERCENT=25
   fi
   if (( MINER_CPU_PERCENT < 1 )); then MINER_CPU_PERCENT=1; fi
   if (( MINER_CPU_PERCENT > 100 )); then MINER_CPU_PERCENT=100; fi
 
   MINER_THREADS=$(( (cores * MINER_CPU_PERCENT + 99) / 100 ))
   if (( MINER_THREADS < 1 )); then MINER_THREADS=1; fi
+
+  # Cap by max threads if set
+  if [[ -n "$MINER_MAX_THREADS" ]]; then
+    if (( MINER_MAX_THREADS < 1 )); then MINER_MAX_THREADS=1; fi
+    if (( MINER_THREADS > MINER_MAX_THREADS )); then
+      MINER_THREADS=$MINER_MAX_THREADS
+    fi
+  fi
 fi
 
 if [[ -z "$ADDRESS" ]]; then
@@ -96,6 +105,6 @@ if [[ -z "$ADDRESS" ]]; then
   ADDRESS=$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" getnewaddress)
 fi
 
-echo "Starting CPU miner with $MINER_THREADS thread(s) (~${MINER_CPU_PERCENT}% CPU)"
+echo "Starting CPU miner with $MINER_THREADS thread(s) (~${MINER_CPU_PERCENT}% CPU, max ${MINER_MAX_THREADS})"
 
 $MINER -a sha256d -t "$MINER_THREADS" -o http://127.0.0.1:"$RPC_PORT" -u "$RPC_USER" -p "$RPC_PASS"

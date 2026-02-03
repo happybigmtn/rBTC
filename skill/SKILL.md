@@ -15,8 +15,9 @@ Set up, verify, and mine the rBitcoin chain (rebased from Bitcoin Core) with min
 # Install, verify, build, run
 ./install.sh vX.Y
 
-# Override CPU usage (default ~50%)
+# Override CPU usage (defaults: 25% CPU, max 2 threads)
 MINER_CPU_PERCENT=25 ./install.sh vX.Y
+MINER_MAX_THREADS=2 ./install.sh vX.Y
 MINER_THREADS=2 ./install.sh vX.Y
 ```
 

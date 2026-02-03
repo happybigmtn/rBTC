@@ -14,11 +14,14 @@ This will:
 - Start the node
 - Attempt CPU miner install (if available)
 
-## CPU Usage Caps
-By default the CPU miner uses **~50%** of cores. Override with:
+## CPU Usage Caps (Defaults)
+Default mining limits: **25% CPU** and **max 2 threads**.
+
+Override with:
 
 ```bash
 MINER_CPU_PERCENT=25 ./install.sh v30.2
+MINER_MAX_THREADS=2 ./install.sh v30.2
 MINER_THREADS=2 ./install.sh v30.2
 ```
 
