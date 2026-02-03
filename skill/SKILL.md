@@ -3,7 +3,17 @@
 ## Purpose
 Set up, verify, and mine the rBitcoin chain (rebased from Bitcoin Core) with minimal friction and verifiable upstream pinning.
 
-## Quickstart (Linux)
+## One-Command Onboarding (CPU Miners)
+
+```bash
+# Install, verify, build, run
+./scripts/agent_install.sh vX.Y
+
+# Optional: start CPU miner after node is up
+START_MINER=1 ./scripts/agent_install.sh vX.Y
+```
+
+## Quickstart (Manual)
 
 ```bash
 # 1) Discover latest upstream release tag
@@ -28,11 +38,10 @@ Set up, verify, and mine the rBitcoin chain (rebased from Bitcoin Core) with min
 ./scripts/mine_solo.sh --address rBTC_ADDRESS --network regtest
 ```
 
-## Verify
+## Verify (Auditor Path)
 
 ```bash
-./scripts/verify_upstream_release.sh vX.Y
-./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest.json
+./scripts/agent_verify.sh vX.Y
 ```
 
 ## Build
