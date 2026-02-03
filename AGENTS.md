@@ -2,17 +2,13 @@
 
 ## Overview
 
-rBitcoin is a Bitcoin Core fork from genesis that is **upstream-pinned** to official Bitcoin Core release tags.
+rBitcoin is a Bitcoin Core fork from genesis that is **upstream-pinned** to official release tags.
 The only allowed delta is a **scope-limited immutable patch** for chain identity. All upgrades are verified before use.
 
-## Prerequisites
+## Prerequisites (macOS)
 
 ```bash
-# Core tooling
-brew install git gpg jq xz
-
-# Optional (for reproducible builds / attestations)
-# Install guix if you plan to verify Guix attestations
+brew install git gpg jq automake libtool pkg-config boost berkeley-db@4 openssl@3
 ```
 
 ## Build & Run
@@ -22,26 +18,26 @@ brew install git gpg jq xz
 ./scripts/fetch_upstream_release.sh
 
 # Verify upstream release authenticity
-./scripts/verify_upstream_release.sh vX.Y.Z
+./scripts/verify_upstream_release.sh vX.Y
 
 # Build from upstream tag + immutable patch
-./scripts/build_from_tag.sh vX.Y.Z
+./scripts/build_from_tag.sh vX.Y
 
 # Generate update manifest
-./scripts/make_update_manifest.sh vX.Y.Z
+./scripts/make_update_manifest.sh vX.Y
 
 # Verify local binary provenance
 ./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest.json
 
 # Run node (refuse-to-run checks happen before launch)
-./scripts/run_node.sh --datadir ./data
+./scripts/run_node.sh --datadir ./data --network main
 ```
 
-## Mining Quickstart
+## Mining Quickstart (Dev)
 
 ```bash
 # Mine a block on the dev chain
-./scripts/mine_solo.sh --address rBTC_ADDRESS
+./scripts/mine_solo.sh --address rBTC_ADDRESS --network regtest
 ```
 
 ## Validation Commands
@@ -49,27 +45,31 @@ brew install git gpg jq xz
 Run these after implementing changes:
 
 ```bash
-# Patch scope enforcement
-./scripts/enforce_patch_scope.sh ./patch/immutable.patch
-
-# Patch hash pinning
-./scripts/compute_patch_hash.sh ./patch/immutable.patch
-
-# Local binary verifier (fail closed)
-./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest.json
+./scripts/tests/test_skill_skeleton.sh
+./scripts/tests/test_references_exist.sh
+./scripts/tests/test_patch_scope_allowlist.sh
+./scripts/tests/test_patch_hash_pinning.sh
+./scripts/tests/test_fetch_upstream_release.sh
+./scripts/tests/test_verify_upstream_release.sh
+./scripts/tests/test_build_from_tag.sh
+./scripts/tests/test_manifest_generation.sh
+./scripts/tests/test_verify_local_binary.sh
+./scripts/tests/test_updater_atomic_swap.sh
+./scripts/tests/test_mine_solo.sh
+./scripts/tests/test_skill_bundle.sh
 ```
 
 ## Project Structure
 
 ```
-rBitcoin/
-├── ralph/                  # Ralph loop + prompts
-├── specs/                  # Requirements with acceptance criteria
-├── scripts/                # Build/verify/update/mine tools
-├── patch/                  # Immutable patch + hash
-├── manifests/              # Update manifests
-├── schemas/                # JSON schemas
-├── references/             # Trust model, verification guides
-├── skill/                  # Agent skill bundle
-└── .github/workflows/       # CI
+rBTC/
+├── ralph/                   # Ralph loop + prompts
+├── specs/                   # Requirement specs
+├── scripts/                 # Build/verify/update/mine tools
+├── patch/                   # Immutable patch + hash
+├── manifests/               # Update manifests
+├── schemas/                 # JSON schemas
+├── references/              # Trust + verification docs
+├── skill/                   # Agent skill bundle
+└── .github/workflows/        # CI
 ```
