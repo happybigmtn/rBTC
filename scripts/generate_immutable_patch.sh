@@ -7,22 +7,14 @@ if [[ -z "$TAG" ]]; then
 fi
 
 UPSTREAM_REPO="${UPSTREAM_REPO:-https://github.com/bitcoin/bitcoin.git}"
-UPSTREAM_DIR="${UPSTREAM_DIR:-./.cache/upstream/bitcoin}"
 PATCH_FILE="${PATCH_FILE:-./patch/immutable.patch}"
 GENESIS_JSON="${GENESIS_JSON:-./references/GENESIS.json}"
-
-if [[ ! -d "$UPSTREAM_DIR/.git" ]]; then
-  mkdir -p "$(dirname "$UPSTREAM_DIR")"
-  git clone "$UPSTREAM_REPO" "$UPSTREAM_DIR"
-fi
-
-# fetch tags
- git -C "$UPSTREAM_DIR" fetch --tags
+UPSTREAM_CLONE_DEPTH="${UPSTREAM_CLONE_DEPTH:-1}"
 
 WORKTREE=$(mktemp -d /tmp/rbtc-upstream-XXXX)
 
-# add worktree at tag
- git -C "$UPSTREAM_DIR" worktree add "$WORKTREE" "$TAG" >/dev/null
+# shallow clone at tag
+ git clone --depth "$UPSTREAM_CLONE_DEPTH" --branch "$TAG" "$UPSTREAM_REPO" "$WORKTREE" >/dev/null
 
 # apply chainparams modifications
 ./scripts/apply_chainparams_patch.py "$WORKTREE" "$GENESIS_JSON"
@@ -30,8 +22,7 @@ WORKTREE=$(mktemp -d /tmp/rbtc-upstream-XXXX)
 # generate patch
  git -C "$WORKTREE" diff > "$PATCH_FILE"
 
-# cleanup worktree (force remove if dirty)
- git -C "$UPSTREAM_DIR" worktree remove -f "$WORKTREE" >/dev/null || true
+# cleanup
  rm -rf "$WORKTREE" || true
 
 # update patch hash

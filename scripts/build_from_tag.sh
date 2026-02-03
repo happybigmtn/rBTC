@@ -13,6 +13,7 @@ PATCH_FILE="${PATCH_FILE:-./patch/immutable.patch}"
 PATCH_HASH_FILE="${PATCH_HASH_FILE:-./patch/immutable.patch.sha256}"
 BUILD_DIR="${BUILD_DIR:-./build}"
 LOG_FILE="${LOG_FILE:-$BUILD_DIR/build.log}"
+UPSTREAM_CLONE_DEPTH="${UPSTREAM_CLONE_DEPTH:-1}"
 
 MOCK_BUILD="${MOCK_BUILD:-0}"
 
@@ -42,15 +43,15 @@ if [[ "$MOCK_BUILD" == "1" ]]; then
   exit 0
 fi
 
-# Clone or update upstream
+# Clone or update upstream (shallow clone by default)
 UPSTREAM_DIR="$WORKDIR/bitcoin"
 if [[ ! -d "$UPSTREAM_DIR/.git" ]]; then
-  git clone "$UPSTREAM_REPO" "$UPSTREAM_DIR"
+  git clone --depth "$UPSTREAM_CLONE_DEPTH" --branch "$TAG" "$UPSTREAM_REPO" "$UPSTREAM_DIR"
+else
+  git -C "$UPSTREAM_DIR" fetch --depth "$UPSTREAM_CLONE_DEPTH" origin "$TAG"
 fi
 
 pushd "$UPSTREAM_DIR" >/dev/null
-
-git fetch --tags
 
 git checkout "$TAG"
 
