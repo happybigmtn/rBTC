@@ -22,6 +22,11 @@ MINER_MAX_THREADS=2 ./install.sh v30.2
 MINER_THREADS=2 ./install.sh v30.2
 ```
 
+## Does install download Bitcoin Core source?
+Yes. The install flow builds a patched Bitcoin Core from source to preserve verifiable provenance. This clones the upstream repo for the selected tag.
+
+If you want a no-source download path, we can add a prebuilt‑binary option (signed manifest) later.
+
 ## Quickstart (Manual)
 
 ```bash

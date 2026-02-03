@@ -64,13 +64,27 @@ install_from_source() {
     return 1
   fi
 
+  # Ensure libcurl m4 macro is visible (macOS + brew)
+  if command -v brew >/dev/null 2>&1; then
+    local curl_prefix
+    curl_prefix=$(brew --prefix curl 2>/dev/null || true)
+    if [[ -d "$curl_prefix/share/aclocal" ]]; then
+      export ACLOCAL_PATH="$curl_prefix/share/aclocal:${ACLOCAL_PATH:-}"
+    fi
+  fi
+
   pushd "$srcdir" >/dev/null
-  ./autogen.sh || true
+  ./autogen.sh
   ./configure --disable-dependency-tracking
   make -j"${BUILD_JOBS:-2}"
 
   local install_dir="${INSTALL_DIR:-$HOME/.local/bin}"
   mkdir -p "$install_dir"
+  if [[ ! -f minerd ]]; then
+    echo "FAIL: minerd not built" >&2
+    popd >/dev/null
+    return 1
+  fi
   cp -f minerd "$install_dir/"
   popd >/dev/null
 
@@ -84,10 +98,9 @@ if command -v brew >/dev/null 2>&1; then
     exit 0
   fi
   # fallback to source build on macOS
-  if run_user brew install automake autoconf libtool pkg-config curl openssl; then
-    if install_from_source; then
-      exit 0
-    fi
+  run_user brew install automake autoconf libtool pkg-config curl openssl
+  if install_from_source; then
+    exit 0
   fi
   echo "WARN: CPU miner auto-install unavailable on macOS" >&2
   exit 1
