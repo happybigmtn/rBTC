@@ -9,6 +9,8 @@ START_MINER="${START_MINER:-0}"
 RUN_NODE="${RUN_NODE:-1}"
 RPC_USER="${RPC_USER:-rbtc}"
 RPC_PASS="${RPC_PASS:-}"
+RPC_ALLOWIP="${RPC_ALLOWIP:-127.0.0.1}"
+RPC_BIND="${RPC_BIND:-0.0.0.0}"
 
 if [[ -z "$TAG" ]]; then
   TAG=$(./scripts/fetch_upstream_release.sh)
@@ -30,8 +32,8 @@ if [[ ! -f "$CONF" ]]; then
 server=1
 rpcuser=$RPC_USER
 rpcpassword=$RPC_PASS
-rpcbind=0.0.0.0
-rpcallowip=0.0.0.0/0
+rpcbind=$RPC_BIND
+rpcallowip=$RPC_ALLOWIP
 rpcport=19332
 port=19333
 listen=1
