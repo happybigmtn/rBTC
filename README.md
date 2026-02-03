@@ -20,7 +20,12 @@ Override:
 MINER_CPU_PERCENT=25 ./install.sh v30.2
 MINER_MAX_THREADS=2 ./install.sh v30.2
 MINER_THREADS=2 ./install.sh v30.2
+MINER_BACKGROUND=1 ./install.sh v30.2
 ```
+
+Notes:
+- Wallet `rbtc` is auto-created/loaded for mining.
+- If the node has zero peers, the miner script will auto-start a local peer node to satisfy `getblocktemplate`.
 
 ## Does install download Bitcoin Core source?
 Yes. The install flow builds a patched Bitcoin Core from source to preserve verifiable provenance. This clones the upstream repo for the selected tag.

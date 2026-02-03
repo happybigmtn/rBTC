@@ -4,6 +4,8 @@ set -euo pipefail
 DATADIR="${DATADIR:-./data}"
 NETWORK="${NETWORK:-main}"
 BITCOIND="${BITCOIND:-./build/bitcoind}"
+BITCOIN_CLI="${BITCOIN_CLI:-./build/bitcoin-cli}"
+DETACH="${DETACH:-1}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -21,6 +23,13 @@ if [[ ! -x "$BITCOIND" ]]; then
   exit 1
 fi
 
+if [[ -x "$BITCOIN_CLI" ]]; then
+  if "$BITCOIN_CLI" -datadir="$DATADIR" getblockchaininfo >/dev/null 2>&1; then
+    echo "Node already running (datadir=$DATADIR)"
+    exit 0
+  fi
+fi
+
 mkdir -p "$DATADIR"
 
 CHAIN_FLAG=""
@@ -28,6 +37,10 @@ if [[ "$NETWORK" != "main" && "$NETWORK" != "mainnet" ]]; then
   CHAIN_FLAG="-$NETWORK"
 fi
 
-$BITCOIND $CHAIN_FLAG -datadir="$DATADIR" -daemon
+if [[ "$DETACH" == "1" ]]; then
+  nohup "$BITCOIND" $CHAIN_FLAG -datadir="$DATADIR" >/tmp/rbitcoin-node.log 2>&1 &
+else
+  "$BITCOIND" $CHAIN_FLAG -datadir="$DATADIR"
+fi
 
 echo "Node started ($NETWORK) with datadir=$DATADIR"

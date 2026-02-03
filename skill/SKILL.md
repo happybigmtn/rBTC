@@ -19,6 +19,9 @@ Set up, verify, and mine the rBitcoin chain (rebased from Bitcoin Core) with min
 MINER_CPU_PERCENT=25 ./install.sh vX.Y
 MINER_MAX_THREADS=2 ./install.sh vX.Y
 MINER_THREADS=2 ./install.sh vX.Y
+
+# Run miner in background
+MINER_BACKGROUND=1 ./install.sh vX.Y
 ```
 
 ## Verify (Auditor Path)
@@ -44,6 +47,10 @@ MINER_THREADS=2 ./install.sh vX.Y
 ```bash
 ./scripts/mine_solo.sh --address rBTC_ADDRESS --network regtest
 ```
+
+## Notes
+- Wallet `rbtc` is auto-created/loaded when mining.
+- If the node has zero peers, the miner script auto-starts a local peer node so `getblocktemplate` works.
 
 ## Update
 

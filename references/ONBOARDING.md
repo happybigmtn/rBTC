@@ -23,6 +23,7 @@ Override with:
 MINER_CPU_PERCENT=25 ./install.sh v30.2
 MINER_MAX_THREADS=2 ./install.sh v30.2
 MINER_THREADS=2 ./install.sh v30.2
+MINER_BACKGROUND=1 ./install.sh v30.2
 ```
 
 ## Fleet Setup (RPC access)
@@ -45,3 +46,5 @@ This emits a report in `reports/agent-verify-v30.2.json`.
 - Ensure `gpg` is installed
 - Linux/WSL: CPU miner auto-installs via package manager or source build
 - macOS: Homebrew may not include `cpuminer`; source build is attempted
+- Wallet `rbtc` is auto-created/loaded when mining.
+- If the node has zero peers, the miner script auto-starts a local peer node so `getblocktemplate` works.

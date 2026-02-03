@@ -5,6 +5,7 @@ ADDRESS=""
 DATADIR="${DATADIR:-./data}"
 NETWORK="${NETWORK:-regtest}"
 BTC_CLI="${BTC_CLI:-./build/bitcoin-cli}"
+WALLET_NAME="${WALLET_NAME:-rbtc}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -25,10 +26,17 @@ if [[ ! -x "$BTC_CLI" ]]; then
 fi
 
 if [[ -z "$ADDRESS" ]]; then
-  ADDRESS=$($BTC_CLI -$NETWORK -datadir="$DATADIR" getnewaddress)
+  if ! $BTC_CLI -$NETWORK -datadir="$DATADIR" listwallets | grep -q "\"$WALLET_NAME\""; then
+    if $BTC_CLI -$NETWORK -datadir="$DATADIR" listwalletdir | grep -q "\"$WALLET_NAME\""; then
+      $BTC_CLI -$NETWORK -datadir="$DATADIR" loadwallet "$WALLET_NAME" >/dev/null
+    else
+      $BTC_CLI -$NETWORK -datadir="$DATADIR" -named createwallet wallet_name="$WALLET_NAME" disable_private_keys=false blank=false passphrase="" >/dev/null
+    fi
+  fi
+  ADDRESS=$($BTC_CLI -$NETWORK -datadir="$DATADIR" -rpcwallet="$WALLET_NAME" getnewaddress)
 fi
 
-$BTC_CLI -$NETWORK -datadir="$DATADIR" generatetoaddress 1 "$ADDRESS" >/tmp/rbtc_mine.json
+$BTC_CLI -$NETWORK -datadir="$DATADIR" -rpcwallet="$WALLET_NAME" generatetoaddress 1 "$ADDRESS" >/tmp/rbtc_mine.json
 
 height=$($BTC_CLI -$NETWORK -datadir="$DATADIR" getblockcount)
 

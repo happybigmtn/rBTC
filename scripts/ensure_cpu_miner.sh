@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
+
+if [[ -x "$INSTALL_DIR/minerd" || -x "$INSTALL_DIR/cpuminer" ]]; then
+  echo "PASS: CPU miner already installed in $INSTALL_DIR"
+  exit 0
+fi
+
 if command -v minerd >/dev/null 2>&1 || command -v cpuminer >/dev/null 2>&1; then
   echo "PASS: CPU miner already installed"
   exit 0
@@ -70,6 +77,15 @@ install_from_source() {
     curl_prefix=$(brew --prefix curl 2>/dev/null || true)
     if [[ -d "$curl_prefix/share/aclocal" ]]; then
       export ACLOCAL_PATH="$curl_prefix/share/aclocal:${ACLOCAL_PATH:-}"
+    fi
+  fi
+
+  # Work around ARM64 4way symbols by disabling HAVE_SHA256_4WAY in miner.h (older toolchains)
+  local arch
+  arch=$(uname -m)
+  if [[ "$arch" == "arm64" || "$arch" == "aarch64" ]]; then
+    if [[ -f "$srcdir/miner.h" ]]; then
+      sed -i.bak 's/^#define HAVE_SHA256_4WAY 1/\/\/ #define HAVE_SHA256_4WAY 1/' "$srcdir/miner.h"
     fi
   fi
 
