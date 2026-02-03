@@ -13,7 +13,7 @@ This will:
 - Verify the local binary
 - Start the node
 
-## Start CPU Miner
+## Start CPU Miner (auto-installs cpuminer)
 
 ```bash
 START_MINER=1 ./scripts/agent_install.sh v30.2
@@ -37,4 +37,4 @@ This emits a report in `reports/agent-verify-v30.2.json`.
 
 ## Troubleshooting
 - Ensure `gpg` is installed
-- Ensure a CPU miner is installed (`cpuminer` or `minerd`)
+- CPU miner auto-installs via package manager if missing

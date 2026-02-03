@@ -4,6 +4,7 @@ set -euo pipefail
 DATADIR="${DATADIR:-$HOME/.rbitcoin}"
 NETWORK="${NETWORK:-main}"
 ADDRESS=""
+AUTO_INSTALL="${AUTO_INSTALL:-1}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -38,14 +39,16 @@ if [[ -z "$RPC_USER" || -z "$RPC_PASS" ]]; then
   exit 1
 fi
 
+if [[ "$AUTO_INSTALL" == "1" ]]; then
+  ./scripts/ensure_cpu_miner.sh
+fi
+
 if command -v minerd >/dev/null 2>&1; then
   MINER=minerd
 elif command -v cpuminer >/dev/null 2>&1; then
   MINER=cpuminer
 else
   echo "FAIL: no CPU miner found. Install cpuminer/minerd." >&2
-  echo "macOS: brew install cpuminer" >&2
-  echo "Ubuntu: sudo apt-get install cpuminer" >&2
   exit 1
 fi
 

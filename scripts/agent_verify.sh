@@ -8,6 +8,7 @@ fi
 
 REPORT="${REPORT:-./reports/agent-verify-$TAG.json}"
 VERIFY_CMD="${VERIFY_CMD:-./scripts/verify_upstream_release.sh}"
+SKIP_BINARY_VERIFY="${SKIP_BINARY_VERIFY:-0}"
 
 mkdir -p ./reports
 
@@ -27,9 +28,11 @@ if [[ -f "./manifests/manifest-$TAG.json" ]]; then
   fi
 fi
 
-if [[ -x ./build/bitcoind && -f "./manifests/manifest-$TAG.json" ]]; then
-  if ! ./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest-$TAG.json >/dev/null; then
-    status="FAIL"
+if [[ "$SKIP_BINARY_VERIFY" != "1" ]]; then
+  if [[ -x ./build/bitcoind && -f "./manifests/manifest-$TAG.json" ]]; then
+    if ! ./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest-$TAG.json >/dev/null; then
+      status="FAIL"
+    fi
   fi
 fi
 

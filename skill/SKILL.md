@@ -9,7 +9,7 @@ Set up, verify, and mine the rBitcoin chain (rebased from Bitcoin Core) with min
 # Install, verify, build, run
 ./scripts/agent_install.sh vX.Y
 
-# Optional: start CPU miner after node is up
+# Install + start CPU miner (auto-installs cpuminer if missing)
 START_MINER=1 ./scripts/agent_install.sh vX.Y
 ```
 

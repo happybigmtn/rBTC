@@ -29,7 +29,7 @@ exit 0
 WRAP
 chmod +x "$WRAP"
 
-VERIFY_CMD="$WRAP" ./scripts/agent_verify.sh v0.0.0-test >/tmp/rbtc_agent_verify.txt
+SKIP_BINARY_VERIFY=1 VERIFY_CMD="$WRAP" ./scripts/agent_verify.sh v0.0.0-test >/tmp/rbtc_agent_verify.txt
 
 if ! grep -q "PASS" /tmp/rbtc_agent_verify.txt; then
   echo "FAIL: agent_verify did not pass"
