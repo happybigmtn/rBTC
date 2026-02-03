@@ -1,0 +1,31 @@
+name: Patch Scope + Hash
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  patch-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch scope allowlist
+        run: ./scripts/tests/test_patch_scope_allowlist.sh
+
+      - name: Patch hash pinning
+        run: ./scripts/tests/test_patch_hash_pinning.sh
+
+  scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skill skeleton
+        run: ./scripts/tests/test_skill_skeleton.sh
+
+      - name: References exist
+        run: ./scripts/tests/test_references_exist.sh

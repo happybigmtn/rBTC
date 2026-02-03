@@ -5,8 +5,8 @@
 ## P0 — Repo Scaffold + Skill Skeleton
 
 ### P0-T1 Create skill skeleton + trust references
-- [ ] Add `skill/SKILL.md` with quickstart verify/build/run/mine/update steps
-- [ ] Add `references/TRUST_MODEL.md` + `references/VERIFICATION_GUIDE.md`
+- [x] Add `skill/SKILL.md` with quickstart verify/build/run/mine/update steps
+- [x] Add `references/TRUST_MODEL.md` + `references/VERIFICATION_GUIDE.md`
 
 **Required Tests:**
 - `./scripts/tests/test_skill_skeleton.sh`
@@ -17,8 +17,8 @@
 ## P1 — Immutable Patch + Scope Enforcement
 
 ### P1-T1 Add immutable patch scaffolding
-- [ ] Add `patch/immutable.patch` placeholder and `patch/allowlist.txt`
-- [ ] Add `scripts/enforce_patch_scope.sh` to reject changes outside allowlist
+- [x] Add `patch/immutable.patch` placeholder and `patch/allowlist.txt`
+- [x] Add `scripts/enforce_patch_scope.sh` to reject changes outside allowlist
 
 **Required Tests:**
 - `./scripts/tests/test_patch_scope_allowlist.sh`
@@ -26,9 +26,9 @@
   - FAIL on disallowed paths
 
 ### P1-T2 Patch hash pinning
-- [ ] Add `scripts/compute_patch_hash.sh`
-- [ ] Add `patch/immutable.patch.sha256`
-- [ ] Add CI job to fail on mismatch
+- [x] Add `scripts/compute_patch_hash.sh`
+- [x] Add `patch/immutable.patch.sha256`
+- [x] Add CI job to fail on mismatch
 
 **Required Tests:**
 - `./scripts/tests/test_patch_hash_pinning.sh`

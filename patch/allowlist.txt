@@ -1,0 +1,25 @@
+# Allowed paths for immutable patch changes
+src/chainparams.cpp
+src/chainparams.h
+src/kernel/chainparams.cpp
+src/kernel/chainparams.h
+src/kernel/chainparamsbase.cpp
+src/kernel/chainparamsbase.h
+src/protocol.h
+src/consensus/params.h
+src/consensus/params.cpp
+src/chainparamsseeds.h
+src/chainparamsseeds.cpp
+src/chainparamsbase.cpp
+src/chainparamsbase.h
+src/consensus/params.h
+src/consensus/params.cpp
+src/chainparams.cpp
+src/chainparams.h
+src/chainparamsseeds.h
+src/chainparamsseeds.cpp
+src/protocol.h
+src/util/strencodings.cpp
+src/util/strencodings.h
+
+# Allowlist can be refined after initial patch is generated
