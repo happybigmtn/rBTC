@@ -1,48 +1,53 @@
-# rBitcoin Skill
+# rBitcoin (rBTC) Skill
 
-## Purpose
-Set up, verify, and mine the rBitcoin chain (rebased from Bitcoin Core) with minimal friction and verifiable upstream pinning.
+## Why Mine rBTC
+rBitcoin is a rebased Bitcoin Core chain designed for maximum trust and minimum friction.
 
-## Quickstart
+- Upstream-pinned: every build derives from an official Bitcoin Core release tag.
+- Verifiable: signature checks + immutable patch hash + manifest verification.
+- CPU-friendly onboarding: one command to build, run, and mine.
+
+## One-Line Join (CPU Mining, Defaults: 25% CPU, Max 2 Threads)
+
+```bash
+./install.sh
+```
+
+## Optional: Pin a Specific Upstream Tag
 
 ```bash
 ./install.sh vX.Y
 ```
 
-## One-Command Onboarding (CPU Miners)
+## Adjust CPU Usage
 
 ```bash
-# Install, verify, build, run
-./install.sh vX.Y
-
-# Override CPU usage (defaults: 25% CPU, max 2 threads)
-MINER_CPU_PERCENT=25 ./install.sh vX.Y
-MINER_MAX_THREADS=2 ./install.sh vX.Y
-MINER_THREADS=2 ./install.sh vX.Y
-
-# Run miner in background
-MINER_BACKGROUND=1 ./install.sh vX.Y
+MINER_CPU_PERCENT=25 ./install.sh
+MINER_MAX_THREADS=2 ./install.sh
+MINER_THREADS=2 ./install.sh
+MINER_BACKGROUND=1 ./install.sh
 ```
 
 ## Verify (Auditor Path)
 
 ```bash
 ./scripts/agent_verify.sh vX.Y
+./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest.json
 ```
 
-## Build
+## Build Only
 
 ```bash
 ./scripts/build_from_tag.sh vX.Y
 ```
 
-## Run
+## Run Node Only
 
 ```bash
 ./scripts/run_node.sh --datadir ./data --network main
 ```
 
-## Mine
+## Mine Solo (Dev/Regtest)
 
 ```bash
 ./scripts/mine_solo.sh --address rBTC_ADDRESS --network regtest
@@ -51,6 +56,7 @@ MINER_BACKGROUND=1 ./install.sh vX.Y
 ## Notes
 - Wallet `rbtc` is auto-created/loaded when mining.
 - If the node has zero peers, the miner script auto-starts a local peer node so `getblocktemplate` works.
+- Set `START_MINER=0` to install without mining.
 
 ## Update
 
