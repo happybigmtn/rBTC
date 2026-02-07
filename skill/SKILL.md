@@ -1,65 +1,78 @@
 # rBitcoin (rBTC) Skill
 
-## Why Mine rBTC
-rBitcoin is a rebased Bitcoin Core chain designed for maximum trust and minimum friction.
+Rebased Bitcoin Core: upstream-pinned builds + immutable chain identity patch + fail-closed verification, packaged so agents can mine with minimal friction.
 
-- Upstream-pinned: every build derives from an official Bitcoin Core release tag.
-- Verifiable: signature checks + immutable patch hash + manifest verification.
-- CPU-friendly onboarding: one command to build, run, and mine.
+## Quickstart
 
-## One-Line Join (CPU Mining, Defaults: 25% CPU, Max 2 Threads)
+One-line join (build, run, mine):
 
 ```bash
 ./install.sh
 ```
 
-## Optional: Pin a Specific Upstream Tag
+Pin a specific upstream Bitcoin Core release tag:
 
 ```bash
-./install.sh vX.Y
+./install.sh vX.Y.Z
 ```
 
-## Adjust CPU Usage
+Adjust CPU usage (defaults: `MINER_CPU_PERCENT=25`, `MINER_MAX_THREADS=2`):
 
 ```bash
-MINER_CPU_PERCENT=25 ./install.sh
-MINER_MAX_THREADS=2 ./install.sh
+MINER_CPU_PERCENT=10 MINER_MAX_THREADS=1 ./install.sh
 MINER_THREADS=2 ./install.sh
 MINER_BACKGROUND=1 ./install.sh
+START_MINER=0 ./install.sh
 ```
 
-## Verify (Auditor Path)
+## Verify
+
+Auditor path (prove you are on an upstream tag + immutable patch):
 
 ```bash
-./scripts/agent_verify.sh vX.Y
+./scripts/agent_verify.sh vX.Y.Z
 ./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest.json
 ```
 
-## Build Only
+## Build
+
+Build only (no run, no mine):
 
 ```bash
-./scripts/build_from_tag.sh vX.Y
+./scripts/build_from_tag.sh vX.Y.Z
 ```
 
-## Run Node Only
+## Run
+
+Run node only:
 
 ```bash
-./scripts/run_node.sh --datadir ./data --network main
+./scripts/run_node.sh --datadir "$HOME/.rbitcoin" --network main
 ```
 
-## Mine Solo (Dev/Regtest)
+## Mine
+
+Mine using a CPU miner against your local node (solo via RPC):
+
+```bash
+./scripts/start_cpu_miner.sh --datadir "$HOME/.rbitcoin" --network main
+```
+
+Dev/regtest mining (instant blocks via RPC generate):
 
 ```bash
 ./scripts/mine_solo.sh --address rBTC_ADDRESS --network regtest
 ```
 
-## Notes
+Notes:
 - Wallet `rbtc` is auto-created/loaded when mining.
-- If the node has zero peers, the miner script auto-starts a local peer node so `getblocktemplate` works.
-- Set `START_MINER=0` to install without mining.
+- If the node has zero peers, the miner script can auto-start a local peer so `getblocktemplate` works (set `PEER_BOOTSTRAP=0` to disable).
 
 ## Update
 
+Auto-updater (atomic swap + rollback):
+
 ```bash
-./scripts/updater.sh --datadir ./data
+./scripts/updater.sh --datadir "$HOME/.rbitcoin"
 ```
+

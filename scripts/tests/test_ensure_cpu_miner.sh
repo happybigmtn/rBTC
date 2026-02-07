@@ -3,6 +3,8 @@ set -euo pipefail
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
+INSTALL_DIR="$TMPDIR/install"
+mkdir -p "$INSTALL_DIR"
 
 # Mock minerd in PATH to simulate installed miner
 cat <<'BIN' > "$TMPDIR/minerd"
@@ -11,7 +13,7 @@ exit 0
 BIN
 chmod +x "$TMPDIR/minerd"
 
-PATH="$TMPDIR:$PATH" ./scripts/ensure_cpu_miner.sh >/tmp/rbtc_ensure_miner.txt
+INSTALL_DIR="$INSTALL_DIR" PATH="$TMPDIR:$PATH" ./scripts/ensure_cpu_miner.sh >/tmp/rbtc_ensure_miner.txt
 
 if ! grep -q "already installed" /tmp/rbtc_ensure_miner.txt; then
   echo "FAIL: ensure_cpu_miner did not detect installed miner"
@@ -26,7 +28,7 @@ exit 1
 BIN
 chmod +x "$TMPDIR/brew"
 
-DRY_RUN=1 DISABLE_SOURCE_BUILD=1 PATH="$TMPDIR:$PATH" ./scripts/ensure_cpu_miner.sh >/tmp/rbtc_ensure_miner2.txt || true
+DRY_RUN=1 FORCE_INSTALL=1 DISABLE_SOURCE_BUILD=1 INSTALL_DIR="$INSTALL_DIR" PATH="$TMPDIR:$PATH" ./scripts/ensure_cpu_miner.sh >/tmp/rbtc_ensure_miner2.txt || true
 if ! grep -q "brew install cpuminer" /tmp/rbtc_ensure_miner2.txt; then
   echo "FAIL: ensure_cpu_miner did not choose brew in dry run"
   exit 1

@@ -2,15 +2,18 @@
 set -euo pipefail
 
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
+FORCE_INSTALL="${FORCE_INSTALL:-0}"
 
-if [[ -x "$INSTALL_DIR/minerd" || -x "$INSTALL_DIR/cpuminer" ]]; then
-  echo "PASS: CPU miner already installed in $INSTALL_DIR"
-  exit 0
-fi
+if [[ "$FORCE_INSTALL" != "1" ]]; then
+  if [[ -x "$INSTALL_DIR/minerd" || -x "$INSTALL_DIR/cpuminer" ]]; then
+    echo "PASS: CPU miner already installed in $INSTALL_DIR"
+    exit 0
+  fi
 
-if command -v minerd >/dev/null 2>&1 || command -v cpuminer >/dev/null 2>&1; then
-  echo "PASS: CPU miner already installed"
-  exit 0
+  if command -v minerd >/dev/null 2>&1 || command -v cpuminer >/dev/null 2>&1; then
+    echo "PASS: CPU miner already installed"
+    exit 0
+  fi
 fi
 
 DISABLE_SOURCE_BUILD="${DISABLE_SOURCE_BUILD:-0}"

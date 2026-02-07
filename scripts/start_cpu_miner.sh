@@ -13,8 +13,12 @@ MINER_BACKGROUND="${MINER_BACKGROUND:-0}"
 PEER_BOOTSTRAP="${PEER_BOOTSTRAP:-1}"
 ADDRESS_TYPE="${ADDRESS_TYPE:-legacy}"
 
-# Ensure locally installed tools are discoverable
-export PATH="$HOME/.local/bin:$PATH"
+# Ensure locally installed tools are discoverable without overriding any
+# user-preferred PATH entries (important for testing and custom miner builds).
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$PATH:$HOME/.local/bin" ;;
+esac
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -40,10 +44,10 @@ if [[ ! -f "$CONF" ]]; then
   exit 1
 fi
 
-RPC_USER=$(grep -E '^rpcuser=' "$CONF" | head -n1 | cut -d= -f2)
-RPC_PASS=$(grep -E '^rpcpassword=' "$CONF" | head -n1 | cut -d= -f2)
-RPC_PORT=$(grep -E '^rpcport=' "$CONF" | head -n1 | cut -d= -f2)
-P2P_PORT=$(grep -E '^port=' "$CONF" | head -n1 | cut -d= -f2)
+RPC_USER=$(grep -E '^rpcuser=' "$CONF" | head -n1 | cut -d= -f2 || true)
+RPC_PASS=$(grep -E '^rpcpassword=' "$CONF" | head -n1 | cut -d= -f2 || true)
+RPC_PORT=$(grep -E '^rpcport=' "$CONF" | head -n1 | cut -d= -f2 || true)
+P2P_PORT=$(grep -E '^port=' "$CONF" | head -n1 | cut -d= -f2 || true)
 
 if [[ -z "$RPC_PORT" ]]; then
   RPC_PORT=19332
