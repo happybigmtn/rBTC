@@ -73,14 +73,14 @@ index 2cbce2c..4d69f4d 100644
 +        m_assumed_chain_state_size = 0;
  
 -        genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
-+        const char* rbtc_timestamp = "rBitcoin rebased from genesis";
++        const char* rbtc_timestamp = "rBitcoin genesis reset 2026-02-26; prior chain versions are invalid.";
 +        const CScript rbtc_genesis_script = CScript() << "04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"_hex << OP_CHECKSIG;
-+        genesis = CreateGenesisBlock(rbtc_timestamp, rbtc_genesis_script, 1770140165, 1, 0x207fffff, 1, 50 * COIN);
++        genesis = CreateGenesisBlock(rbtc_timestamp, rbtc_genesis_script, 1772127762, 1, 0x207fffff, 1, 50 * COIN);
          consensus.hashGenesisBlock = genesis.GetHash();
 -        assert(consensus.hashGenesisBlock == uint256{"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"});
 -        assert(genesis.hashMerkleRoot == uint256{"4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"});
-+        assert(consensus.hashGenesisBlock == uint256{"1aa8ab61be59900c0662908ac4d766d6d69778f9fe12feb2bb17e909132d9c05"});
-+        assert(genesis.hashMerkleRoot == uint256{"bf97243dde6723d6cfaa10411610d25f325ed8f99bfdd14df04e936558cd3845"});
++        assert(consensus.hashGenesisBlock == uint256{"6a934d6728eda510ec92aef31275c40cc7c84f2a7518749c07c347adadad3e45"});
++        assert(genesis.hashMerkleRoot == uint256{"833fdbe289f2071f7abacb84b751b682a16850b6593a732579542b65923b69b2"});
  
          // Note that of those which support the service bits prefix, most only support a subset of
          // possible options.
@@ -89,6 +89,16 @@ index 2cbce2c..4d69f4d 100644
          vSeeds.emplace_back("seed.bitcoin.wiz.biz."); // Jason Maurice
          vSeeds.emplace_back("seed.mainnet.achownodes.xyz."); // Ava Chow, only supports x1, x5, x9, x49, x809, x849, xd, x400, x404, x408, x448, xc08, xc48, x40c
 +        vSeeds.clear();
++        vSeeds.emplace_back("95.111.227.14");
++        vSeeds.emplace_back("95.111.229.108");
++        vSeeds.emplace_back("95.111.239.142");
++        vSeeds.emplace_back("161.97.83.147");
++        vSeeds.emplace_back("161.97.97.83");
++        vSeeds.emplace_back("161.97.114.192");
++        vSeeds.emplace_back("161.97.117.0");
++        vSeeds.emplace_back("194.163.144.177");
++        vSeeds.emplace_back("185.218.126.23");
++        vSeeds.emplace_back("185.239.209.227");
  
 -        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
 -        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);

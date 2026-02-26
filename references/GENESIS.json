@@ -1,11 +1,11 @@
 {
-  "timestamp": "rBitcoin rebased from genesis",
-  "time": 1770140165,
+  "timestamp": "rBitcoin genesis reset 2026-02-26; prior chain versions are invalid.",
+  "time": 1772127762,
   "bits": "0x207fffff",
   "version": 1,
   "reward": 5000000000,
   "nonce": 1,
-  "merkle_root": "bf97243dde6723d6cfaa10411610d25f325ed8f99bfdd14df04e936558cd3845",
-  "hash": "1aa8ab61be59900c0662908ac4d766d6d69778f9fe12feb2bb17e909132d9c05",
-  "txid": "bf97243dde6723d6cfaa10411610d25f325ed8f99bfdd14df04e936558cd3845"
+  "merkle_root": "833fdbe289f2071f7abacb84b751b682a16850b6593a732579542b65923b69b2",
+  "hash": "6a934d6728eda510ec92aef31275c40cc7c84f2a7518749c07c347adadad3e45",
+  "txid": "833fdbe289f2071f7abacb84b751b682a16850b6593a732579542b65923b69b2"
 }

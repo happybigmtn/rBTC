@@ -2,6 +2,22 @@
 
 rBitcoin is a Bitcoin Core fork from genesis that is **upstream-pinned** to official release tags. The only allowed delta is a scope-limited immutable patch for chain identity. Nodes auto-update to verified releases and refuse to run if provenance checks fail.
 
+## Network Launch (February 26, 2026)
+
+Mining started today on the new rBTC genesis chain.
+
+Current seed nodes:
+- `95.111.227.14`
+- `95.111.229.108`
+- `95.111.239.142`
+- `161.97.83.147`
+- `161.97.97.83`
+- `161.97.114.192`
+- `161.97.117.0`
+- `194.163.144.177`
+- `185.218.126.23`
+- `185.239.209.227`
+
 ## One-Click Install (CPU Miners)
 
 ```bash

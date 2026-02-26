@@ -18,6 +18,18 @@ bech32_hrp = "rbc"
 p2pkh = 60
 p2sh = 85
 wif = 188
+seed_nodes = [
+    "95.111.227.14",
+    "95.111.229.108",
+    "95.111.239.142",
+    "161.97.83.147",
+    "161.97.97.83",
+    "161.97.114.192",
+    "161.97.117.0",
+    "194.163.144.177",
+    "185.218.126.23",
+    "185.239.209.227",
+]
 
 pow_limit = "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -70,8 +82,16 @@ text, n = pattern.subn(replacement, text, count=1)
 if n != 1:
     raise SystemExit("Failed to replace genesis block section")
 
-# Seeds: clear vSeeds after mainnet seeds block by inserting vSeeds.clear() before base58 prefixes
-text = re.sub(r"(\n\s*)base58Prefixes\[PUBKEY_ADDRESS\] =", r"\n        vSeeds.clear();\1base58Prefixes[PUBKEY_ADDRESS] =", text, count=1)
+# Seeds: replace DNS seeds with Contabo fleet bootstrap seeds
+seed_lines = "\n        vSeeds.clear();\n" + "".join(
+    f'        vSeeds.emplace_back("{seed}");\n' for seed in seed_nodes
+)
+text = re.sub(
+    r"\n\s*base58Prefixes\[PUBKEY_ADDRESS\] =",
+    f"{seed_lines}        base58Prefixes[PUBKEY_ADDRESS] =",
+    text,
+    count=1,
+)
 
 # Base58 prefixes and bech32
 text = re.sub(r"base58Prefixes\[PUBKEY_ADDRESS\] = std::vector<unsigned char>\(1,\d+\);",
