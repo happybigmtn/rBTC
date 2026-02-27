@@ -21,6 +21,32 @@ MOCK_BUILD="${MOCK_BUILD:-0}"
 
 mkdir -p "$WORKDIR" "$BUILD_DIR"
 
+install_binary_atomic() {
+  local src="$1"
+  local dest="$2"
+  local tmp
+
+  tmp="$(mktemp "${dest}.tmp.XXXXXX")"
+  cp -f "$src" "$tmp"
+  chmod +x "$tmp"
+  mv -f "$tmp" "$dest"
+}
+
+write_mock_binary() {
+  local dest="$1"
+  local name="$2"
+  local tmp
+
+  tmp="$(mktemp "${dest}.tmp.XXXXXX")"
+  cat > "$tmp" <<EOF
+#!/usr/bin/env bash
+echo "FAIL: $name is a mock binary (set MOCK_BUILD=0 for real build)" >&2
+exit 1
+EOF
+  chmod +x "$tmp"
+  mv -f "$tmp" "$dest"
+}
+
 # Ensure patch hash matches pinned file
 PATCH_HASH=""
 if [[ -f "$PATCH_HASH_FILE" ]]; then
@@ -40,9 +66,8 @@ fi
 if [[ "$MOCK_BUILD" == "1" ]]; then
   echo "MOCK BUILD for $TAG" > "$LOG_FILE"
   echo "patch_hash=$(cat "$PATCH_HASH_FILE" 2>/dev/null || echo none)" >> "$LOG_FILE"
-  echo "binary" > "$BUILD_DIR/bitcoind"
-  echo "binary" > "$BUILD_DIR/bitcoin-cli"
-  chmod +x "$BUILD_DIR/bitcoind" "$BUILD_DIR/bitcoin-cli"
+  write_mock_binary "$BUILD_DIR/bitcoind" "bitcoind"
+  write_mock_binary "$BUILD_DIR/bitcoin-cli" "bitcoin-cli"
   echo "PASS: mock build complete"
   exit 0
 fi
@@ -117,11 +142,11 @@ fi
 
 # Copy binaries
 if [[ -f "src/bitcoind" ]]; then
-  cp -f src/bitcoind "$BUILD_DIR/bitcoind"
-  cp -f src/bitcoin-cli "$BUILD_DIR/bitcoin-cli"
+  install_binary_atomic src/bitcoind "$BUILD_DIR/bitcoind"
+  install_binary_atomic src/bitcoin-cli "$BUILD_DIR/bitcoin-cli"
 elif [[ -n "$CMAKE_BUILD_DIR" && -f "$CMAKE_BUILD_DIR/bin/bitcoind" ]]; then
-  cp -f "$CMAKE_BUILD_DIR/bin/bitcoind" "$BUILD_DIR/bitcoind"
-  cp -f "$CMAKE_BUILD_DIR/bin/bitcoin-cli" "$BUILD_DIR/bitcoin-cli"
+  install_binary_atomic "$CMAKE_BUILD_DIR/bin/bitcoind" "$BUILD_DIR/bitcoind"
+  install_binary_atomic "$CMAKE_BUILD_DIR/bin/bitcoin-cli" "$BUILD_DIR/bitcoin-cli"
 else
   echo "FAIL: build did not produce bitcoind/bitcoin-cli" >&2
   exit 1

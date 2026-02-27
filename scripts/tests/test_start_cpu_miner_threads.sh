@@ -2,7 +2,33 @@
 set -euo pipefail
 
 TMPDIR=$(mktemp -d)
-trap 'rm -rf "$TMPDIR"' EXIT
+ORIG_CLI_BACKUP=""
+if [[ -f ./build/bitcoin-cli ]]; then
+  ORIG_CLI_BACKUP="$(mktemp)"
+  cp -f ./build/bitcoin-cli "$ORIG_CLI_BACKUP"
+fi
+
+restore_binary() {
+  local src="$1"
+  local dst="$2"
+  local tmp
+
+  if [[ -f "$src" ]]; then
+    tmp="$(mktemp "${dst}.tmp.XXXXXX")"
+    cp -f "$src" "$tmp"
+    chmod +x "$tmp" || true
+    mv -f "$tmp" "$dst"
+  else
+    rm -f "$dst"
+  fi
+}
+
+cleanup() {
+  restore_binary "$ORIG_CLI_BACKUP" ./build/bitcoin-cli
+  rm -f "$ORIG_CLI_BACKUP"
+  rm -rf "$TMPDIR"
+}
+trap cleanup EXIT
 
 # Mock miner
 cat <<'BIN' > "$TMPDIR/minerd"
