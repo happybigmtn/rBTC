@@ -26,7 +26,7 @@ done < "$ALLOWLIST_FILE"
 patched_files=()
 while IFS= read -r line; do
   [[ -z "$line" ]] && continue
-  line=$(echo "$line" | sed -E 's@^(\+\+\+|---) [ab]/@@')
+  line=$(echo "$line" | sed -E 's@^(\+\+\+|---) [^/]+/@@')
   [[ "$line" == "/dev/null" ]] && continue
   patched_files+=("$line")
 done < <(grep -E '^(\+\+\+|---) ' "$PATCH_FILE" | sort -u)

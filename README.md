@@ -25,6 +25,24 @@ Current seed nodes:
 ```
 
 This will verify, build, run the node, and attempt to start CPU mining.
+Installer now:
+- stops any running local `rBTC` daemon before replacing binaries
+- waits for RPC readiness before miner startup
+- fails fast if peers are reachable but local height remains `0` (consensus mismatch guard)
+
+Install enforces network patch pinning before build:
+- required hash source: `references/NETWORK_PATCH_HASH`
+- local patch hash source: `patch/immutable.patch.sha256`
+
+If hashes differ, install auto-updates `references/NETWORK_PATCH_HASH` by default.
+Set `AUTO_ACCEPT_NETWORK_PATCH_HASH=0` for strict fail-fast pinning.
+
+By default, install also writes:
+- `~/.local/bin/rbtc-cli`
+- `~/.local/bin/rbtc-bitcoind`
+
+These wrappers point to the repo-built binaries and `~/.rbitcoin`, so machines
+with an existing Bitcoin Core mainnet install don't conflict with rBTC commands.
 
 ## CPU Usage Caps (Defaults)
 
