@@ -23,7 +23,6 @@ AGENTS.md
 IMPLEMENTATION_PLAN.md
 ralph/
 specs/
-skill/
 references/*
 !references/GENESIS.json
 deploy-logs/
