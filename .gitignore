@@ -26,3 +26,7 @@ specs/
 references/*
 !references/GENESIS.json
 deploy-logs/
+
+# Fleet config (contains server IPs)
+scripts/fleet.conf
+scripts/seeds.conf

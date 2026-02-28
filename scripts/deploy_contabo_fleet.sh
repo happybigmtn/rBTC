@@ -12,18 +12,12 @@ MINER_CPU_PERCENT="${MINER_CPU_PERCENT:-25}"
 MINER_MAX_THREADS="${MINER_MAX_THREADS:-2}"
 TAG="${1:-}"
 
-declare -a FLEET_IPS=(
-  "FLEET_NODE_01"
-  "FLEET_NODE_02"
-  "FLEET_NODE_03"
-  "FLEET_NODE_04"
-  "FLEET_NODE_05"
-  "FLEET_NODE_06"
-  "FLEET_NODE_07"
-  "FLEET_NODE_08"
-  "FLEET_NODE_09"
-  "FLEET_NODE_10"
-)
+FLEET_CONF="${FLEET_CONF:-$ROOT_DIR/scripts/fleet.conf}"
+if [[ ! -f "$FLEET_CONF" ]]; then
+  echo "FAIL: fleet config not found at $FLEET_CONF (copy fleet.conf.example)" >&2
+  exit 1
+fi
+source "$FLEET_CONF"
 
 if [[ -z "$TAG" ]]; then
   TAG="$("$ROOT_DIR/scripts/fetch_upstream_release.sh")"

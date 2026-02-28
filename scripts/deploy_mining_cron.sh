@@ -11,18 +11,12 @@ SCRIPT_SRC="$ROOT_DIR/scripts/mining_report.sh"
 CRON_SCHEDULE="0 */6 * * *"
 CRON_CMD="$REMOTE_SCRIPTS/mining_report.sh >> /root/mining-reports/cron.log 2>&1"
 
-declare -a FLEET_IPS=(
-  "FLEET_NODE_01"
-  "FLEET_NODE_02"
-  "FLEET_NODE_03"
-  "FLEET_NODE_04"
-  "FLEET_NODE_05"
-  "FLEET_NODE_06"
-  "FLEET_NODE_07"
-  "FLEET_NODE_08"
-  "FLEET_NODE_09"
-  "FLEET_NODE_10"
-)
+FLEET_CONF="${FLEET_CONF:-$ROOT_DIR/scripts/fleet.conf}"
+if [[ ! -f "$FLEET_CONF" ]]; then
+  echo "FAIL: fleet config not found at $FLEET_CONF (copy fleet.conf.example)" >&2
+  exit 1
+fi
+source "$FLEET_CONF"
 
 if [[ ! -f "$KEY_PATH" ]]; then
   echo "FAIL: fleet SSH key not found at $KEY_PATH" >&2

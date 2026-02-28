@@ -164,15 +164,31 @@ if [[ -z "$ADDRESS" ]]; then
     echo "FAIL: bitcoin-cli not found at ./build/bitcoin-cli" >&2
     exit 1
   fi
+  CLI="./build/bitcoin-cli -rpcwait -datadir=$DATADIR"
+
   # Ensure a wallet is loaded or created
-  if ! ./build/bitcoin-cli -rpcwait -datadir="$DATADIR" listwallets | grep -q "\"$WALLET_NAME\""; then
-    if ./build/bitcoin-cli -rpcwait -datadir="$DATADIR" listwalletdir | grep -q "\"$WALLET_NAME\""; then
-      ./build/bitcoin-cli -rpcwait -datadir="$DATADIR" loadwallet "$WALLET_NAME" >/dev/null
+  if ! $CLI listwallets | grep -q "\"$WALLET_NAME\""; then
+    if $CLI listwalletdir | grep -q "\"$WALLET_NAME\""; then
+      $CLI loadwallet "$WALLET_NAME" >/dev/null
     else
-      ./build/bitcoin-cli -rpcwait -datadir="$DATADIR" -named createwallet wallet_name="$WALLET_NAME" disable_private_keys=false blank=false passphrase="" >/dev/null
+      $CLI -named createwallet wallet_name="$WALLET_NAME" disable_private_keys=false blank=false passphrase="" >/dev/null
     fi
   fi
-  ADDRESS=$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" -rpcwallet="$WALLET_NAME" getnewaddress "" "$ADDRESS_TYPE")
+
+  # Reuse pinned address from previous run if valid
+  ADDR_FILE="$DATADIR/mining_address"
+  if [[ -f "$ADDR_FILE" ]]; then
+    ADDRESS=$(cat "$ADDR_FILE")
+    if ! $CLI validateaddress "$ADDRESS" | jq -e '.isvalid' >/dev/null 2>&1; then
+      echo "WARN: pinned address invalid, generating new one" >&2
+      ADDRESS=""
+    fi
+  fi
+
+  if [[ -z "$ADDRESS" ]]; then
+    ADDRESS=$($CLI -rpcwallet="$WALLET_NAME" getnewaddress "" "$ADDRESS_TYPE")
+    echo "$ADDRESS" > "$ADDR_FILE"
+  fi
 fi
 
 maybe_start_peer
