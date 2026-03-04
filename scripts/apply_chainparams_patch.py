@@ -25,10 +25,6 @@ seed_nodes = [
     "FLEET_NODE_04",
     "FLEET_NODE_05",
     "FLEET_NODE_06",
-    "FLEET_NODE_07",
-    "FLEET_NODE_08",
-    "FLEET_NODE_09",
-    "FLEET_NODE_10",
 ]
 
 pow_limit = "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
