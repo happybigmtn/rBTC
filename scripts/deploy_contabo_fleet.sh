@@ -120,7 +120,7 @@ MINER_CPU_PERCENT="$MINER_CPU_PERCENT" MINER_MAX_THREADS="$MINER_MAX_THREADS" \
 height="$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" getblockcount)"
 besthash="$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" getbestblockhash)"
 conns="$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" getconnectioncount)"
-miner_pid="$(pgrep -fa 'minerd|cpuminer' | head -n1 || true)"
+miner_pid="$(pgrep -fa 'minerd|cpuminer-opt|cpuminer' | head -n1 || true)"
 
 echo "DEPLOY_OK ip=$SELF_IP height=$height conns=$conns hash=$besthash"
 echo "MINER_PROCESS ${miner_pid:-not-found}"

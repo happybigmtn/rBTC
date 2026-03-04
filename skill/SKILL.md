@@ -75,7 +75,7 @@ For single-block mining (regtest/dev):
 ./scripts/mine_solo.sh --address <ADDRESS> --network regtest
 ```
 
-Fleet deployment (10-node Contabo):
+Fleet deployment (6-node Contabo mining fleet):
 
 ```bash
 ./scripts/deploy_contabo_fleet.sh v30.2

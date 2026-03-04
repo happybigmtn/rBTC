@@ -67,8 +67,13 @@ if [[ "$AUTO_INSTALL" == "1" ]]; then
   fi
 fi
 
+# Prefer cpuminer-opt (SHA NI / AVX2 optimized) over generic minerd/cpuminer
 MINER=""
-if command -v minerd >/dev/null 2>&1; then
+if [[ -x "$HOME/.local/bin/cpuminer-opt" ]]; then
+  MINER="$HOME/.local/bin/cpuminer-opt"
+elif command -v cpuminer-opt >/dev/null 2>&1; then
+  MINER=cpuminer-opt
+elif command -v minerd >/dev/null 2>&1; then
   MINER=minerd
 elif command -v cpuminer >/dev/null 2>&1; then
   MINER=cpuminer
@@ -79,7 +84,7 @@ elif [[ -x "$HOME/.local/bin/cpuminer" ]]; then
 fi
 
 if [[ -z "$MINER" ]]; then
-  echo "FAIL: no CPU miner found. Install cpuminer/minerd." >&2
+  echo "FAIL: no CPU miner found. Install cpuminer-opt or minerd." >&2
   exit 1
 fi
 

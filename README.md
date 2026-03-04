@@ -6,17 +6,13 @@ rBitcoin is a Bitcoin Core fork from genesis that is **upstream-pinned** to offi
 
 Mining started today on the new rBTC genesis chain.
 
-Current seed nodes:
-- `FLEET_NODE_01`
-- `FLEET_NODE_02`
-- `FLEET_NODE_03`
-- `FLEET_NODE_04`
-- `FLEET_NODE_05`
-- `FLEET_NODE_06`
-- `FLEET_NODE_07`
-- `FLEET_NODE_08`
-- `FLEET_NODE_09`
-- `FLEET_NODE_10`
+Current seed nodes (6-node Contabo mining fleet):
+- `95.111.239.142`
+- `161.97.114.192`
+- `161.97.117.0`
+- `194.163.144.177`
+- `185.218.126.23`
+- `185.239.209.227`
 
 ## One-Click Install (CPU Miners)
 

@@ -10,6 +10,7 @@ build/
 # Generated manifests/reports (keep directories, not files)
 manifests/*.json
 reports/*.json
+reports/*.md
 
 # Logs
 *.log
@@ -25,6 +26,8 @@ ralph/
 specs/
 references/*
 !references/GENESIS.json
+!references/TRUST_MODEL.md
+!references/VERIFICATION_GUIDE.md
 deploy-logs/
 
 # Fleet config (contains server IPs)
