@@ -17,6 +17,19 @@ Override defaults:
 MINER_CPU_PERCENT=25 MINER_MAX_THREADS=2 ./install.sh v30.2
 ```
 
+## Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `MINER_CPU_PERCENT` | `25` | Max CPU percentage for mining |
+| `MINER_MAX_THREADS` | `2` | Max miner threads |
+| `MINER_THREADS` | (auto) | Explicit thread count |
+| `MINER_BACKGROUND` | `0` | Run miner in background |
+| `START_MINER` | `1` | Set to `0` to skip miner startup |
+| `AUTO_ACCEPT_NETWORK_PATCH_HASH` | `1` | Set to `0` for strict patch-hash pinning |
+| `RPC_ALLOWIP` | `127.0.0.1` | RPC access control |
+| `RPC_BIND` | `127.0.0.1` | RPC bind address |
+
 ## Verify
 
 Audit the upstream release and local binary without running a node:
@@ -59,7 +72,7 @@ Generate the update manifest after building:
 ./scripts/run_node.sh --datadir ~/.rbitcoin --network main
 ```
 
-The node connects to the Contabo seed fleet automatically via `addnode` entries in `bitcoin.conf`. RPC defaults to port `19332`, P2P to `19333`.
+RPC defaults to port `19332`, P2P to `19333`. Connect to seed nodes by adding `addnode=<ip>:19333` entries to `~/.rbitcoin/bitcoin.conf`.
 
 ## Mine
 
@@ -73,12 +86,6 @@ For single-block mining (regtest/dev):
 
 ```bash
 ./scripts/mine_solo.sh --address <ADDRESS> --network regtest
-```
-
-Fleet deployment (6-node Contabo mining fleet):
-
-```bash
-./scripts/deploy_contabo_fleet.sh v30.2
 ```
 
 ## Update
