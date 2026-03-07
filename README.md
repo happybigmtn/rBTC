@@ -77,6 +77,6 @@ If you want a no-source download path, we can add a prebuilt‑binary option (si
 ## Docs
 - `specs/` — requirements and acceptance criteria
 - `references/` — trust model, verification guide, update protocol
-- `skill/` — Agent Skill packaging
+- `SKILL.md` / `clawhub.json` — Agent Skill packaging
 - `ralph/` — planning/build loop
 - `CHANGELOG.md` — version history
