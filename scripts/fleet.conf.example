@@ -1,7 +1,0 @@
-# Fleet node IPs — copy to fleet.conf and fill in real values.
-# fleet.conf is gitignored and must not be committed.
-
-declare -a FLEET_IPS=(
-  "1.2.3.4"
-  "5.6.7.8"
-)

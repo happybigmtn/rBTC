@@ -6,7 +6,7 @@ rBitcoin is a Bitcoin Core fork from genesis that is **upstream-pinned** to offi
 
 Mining started today on the new rBTC genesis chain.
 
-Current seed nodes (6-node Contabo mining fleet):
+Current seed nodes:
 - `95.111.239.142`
 - `161.97.114.192`
 - `161.97.117.0`

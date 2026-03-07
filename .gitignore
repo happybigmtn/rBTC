@@ -30,6 +30,15 @@ references/*
 !references/VERIFICATION_GUIDE.md
 deploy-logs/
 
-# Fleet config (contains server IPs)
+# Fleet management (proprietary)
 scripts/fleet.conf
+scripts/fleet.conf.example
 scripts/seeds.conf
+scripts/seeds.conf.example
+scripts/deploy_contabo_fleet.sh
+scripts/deploy_mining_cron.sh
+scripts/pin_mining_addresses.sh
+scripts/backup_fleet_wallets.sh
+scripts/rotate_fleet_wallets.sh
+scripts/sweep_to_treasury.sh
+scripts/mining_report.sh
