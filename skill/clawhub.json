@@ -2,6 +2,8 @@
   "name": "rbitcoin",
   "version": "1.1.0",
   "description": "Bitcoin Core fork from genesis with upstream-pinned immutable patch for chain identity. Single-node install, build, verify, mine, and update.",
+  "homepage": "https://github.com/happybigmtn/rBTC",
+  "source": "https://github.com/happybigmtn/rBTC",
   "entrypoint": "install.sh",
   "scripts": [
     "scripts/agent_install.sh",
