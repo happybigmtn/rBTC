@@ -1,0 +1,44 @@
+# It is not recommended to modify this file in-place, because it will
+# be overwritten during package upgrades. If you want to add further
+# options or overwrite existing ones then use
+# $ systemctl edit rbtc-bitcoind.service
+# See "man systemd.service" for details.
+
+[Unit]
+Description=rBTC daemon
+Documentation=https://github.com/happybigmtn/rBTC/blob/main/doc/public-node.md
+
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/lib/rbtc/bitcoind -pid=/run/rbitcoin/rbitcoin.pid \
+                        -conf=/etc/rbitcoin/bitcoin.conf \
+                        -datadir=/var/lib/rbitcoin \
+                        -startupnotify='systemd-notify --ready' \
+                        -shutdownnotify='systemd-notify --stopping'
+
+Type=notify
+NotifyAccess=all
+PIDFile=/run/rbitcoin/rbitcoin.pid
+
+Restart=on-failure
+TimeoutStartSec=infinity
+TimeoutStopSec=600
+
+User=rbtc
+Group=rbtc
+UMask=0077
+
+RuntimeDirectory=rbitcoin
+RuntimeDirectoryMode=0750
+
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+PrivateDevices=true
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

@@ -1,17 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "$SCRIPT_DIR/bitcoin-cli" || -x "$SCRIPT_DIR/bitcoind" ]]; then
+  ROOT_DIR="$SCRIPT_DIR"
+else
+  ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
 DATADIR="${DATADIR:-$HOME/.rbitcoin}"
 NETWORK="${NETWORK:-main}"
 ADDRESS=""
 AUTO_INSTALL="${AUTO_INSTALL:-1}"
 MINER_THREADS="${MINER_THREADS:-}"
-MINER_CPU_PERCENT="${MINER_CPU_PERCENT:-67}"
-MINER_MAX_THREADS="${MINER_MAX_THREADS:-8}"
+MINER_CPU_PERCENT="${MINER_CPU_PERCENT:-25}"
+MINER_MAX_THREADS="${MINER_MAX_THREADS:-20}"
 WALLET_NAME="${WALLET_NAME:-rbtc}"
 MINER_BACKGROUND="${MINER_BACKGROUND:-0}"
 PEER_BOOTSTRAP="${PEER_BOOTSTRAP:-1}"
 ADDRESS_TYPE="${ADDRESS_TYPE:-legacy}"
+if [[ -x "$ROOT_DIR/build/bitcoind" ]]; then
+  DEFAULT_BITCOIND="$ROOT_DIR/build/bitcoind"
+else
+  DEFAULT_BITCOIND="$ROOT_DIR/bitcoind"
+fi
+if [[ -x "$ROOT_DIR/build/bitcoin-cli" ]]; then
+  DEFAULT_BITCOIN_CLI="$ROOT_DIR/build/bitcoin-cli"
+else
+  DEFAULT_BITCOIN_CLI="$ROOT_DIR/bitcoin-cli"
+fi
+if [[ -x "$ROOT_DIR/scripts/ensure_cpu_miner.sh" ]]; then
+  DEFAULT_ENSURE_CPU_MINER="$ROOT_DIR/scripts/ensure_cpu_miner.sh"
+else
+  DEFAULT_ENSURE_CPU_MINER="$ROOT_DIR/rbtc-ensure-cpu-miner"
+fi
+
+BITCOIND="${RBTC_BITCOIND:-$DEFAULT_BITCOIND}"
+BITCOIN_CLI="${RBTC_BITCOIN_CLI:-$DEFAULT_BITCOIN_CLI}"
+ENSURE_CPU_MINER="${RBTC_ENSURE_CPU_MINER:-$DEFAULT_ENSURE_CPU_MINER}"
 
 # Ensure locally installed tools are discoverable without overriding any
 # user-preferred PATH entries (important for testing and custom miner builds).
@@ -62,29 +87,24 @@ if [[ -z "$RPC_USER" || -z "$RPC_PASS" ]]; then
 fi
 
 if [[ "$AUTO_INSTALL" == "1" ]]; then
-  if ! ./scripts/ensure_cpu_miner.sh; then
+  if ! "$ENSURE_CPU_MINER"; then
     echo "WARN: CPU miner auto-install failed; continuing if miner exists" >&2
   fi
 fi
 
-# Prefer cpuminer-opt (SHA NI / AVX2 optimized) over generic minerd/cpuminer
 MINER=""
-if [[ -x "$HOME/.local/bin/cpuminer-opt" ]]; then
-  MINER="$HOME/.local/bin/cpuminer-opt"
-elif command -v cpuminer-opt >/dev/null 2>&1; then
-  MINER=cpuminer-opt
-elif command -v minerd >/dev/null 2>&1; then
-  MINER=minerd
+if [[ -x "$HOME/.local/bin/cpuminer" ]]; then
+  MINER="$HOME/.local/bin/cpuminer"
 elif command -v cpuminer >/dev/null 2>&1; then
   MINER=cpuminer
 elif [[ -x "$HOME/.local/bin/minerd" ]]; then
   MINER="$HOME/.local/bin/minerd"
-elif [[ -x "$HOME/.local/bin/cpuminer" ]]; then
-  MINER="$HOME/.local/bin/cpuminer"
+elif command -v minerd >/dev/null 2>&1; then
+  MINER=minerd
 fi
 
 if [[ -z "$MINER" ]]; then
-  echo "FAIL: no CPU miner found. Install cpuminer-opt or minerd." >&2
+  echo "FAIL: no CPU miner found. Install cpuminer-opt (binary name: cpuminer)." >&2
   exit 1
 fi
 
@@ -103,7 +123,7 @@ maybe_start_peer() {
     return
   fi
   local conn
-  conn=$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" getconnectioncount 2>/dev/null || echo "")
+  conn=$("$BITCOIN_CLI" -rpcwait -datadir="$DATADIR" getconnectioncount 2>/dev/null || echo "")
   if [[ "$conn" != "0" && -n "$conn" ]]; then
     return
   fi
@@ -114,7 +134,7 @@ maybe_start_peer() {
   peer_port=$(get_free_port)
 
   echo "No peers detected. Starting local peer on port $peer_port..."
-  nohup ./build/bitcoind \
+  nohup "$BITCOIND" \
     -datadir="$peer_datadir" \
     -port="$peer_port" \
     -bind=127.0.0.1 \
@@ -127,7 +147,7 @@ maybe_start_peer() {
   # wait briefly for connection
   for _ in {1..10}; do
     sleep 1
-    conn=$(./build/bitcoin-cli -rpcwait -datadir="$DATADIR" getconnectioncount 2>/dev/null || echo "")
+    conn=$("$BITCOIN_CLI" -rpcwait -datadir="$DATADIR" getconnectioncount 2>/dev/null || echo "")
     if [[ "$conn" != "0" && -n "$conn" ]]; then
       echo "Peer connected."
       break
@@ -165,42 +185,26 @@ if [[ -z "$MINER_THREADS" ]]; then
 fi
 
 if [[ -z "$ADDRESS" ]]; then
-  if [[ ! -x ./build/bitcoin-cli ]]; then
-    echo "FAIL: bitcoin-cli not found at ./build/bitcoin-cli" >&2
+  if [[ ! -x "$BITCOIN_CLI" ]]; then
+    echo "FAIL: bitcoin-cli not found at $BITCOIN_CLI" >&2
     exit 1
   fi
-  CLI="./build/bitcoin-cli -rpcwait -datadir=$DATADIR"
-
   # Ensure a wallet is loaded or created
-  if ! $CLI listwallets | grep -q "\"$WALLET_NAME\""; then
-    if $CLI listwalletdir | grep -q "\"$WALLET_NAME\""; then
-      $CLI loadwallet "$WALLET_NAME" >/dev/null
+  if ! "$BITCOIN_CLI" -rpcwait -datadir="$DATADIR" listwallets | grep -q "\"$WALLET_NAME\""; then
+    if "$BITCOIN_CLI" -rpcwait -datadir="$DATADIR" listwalletdir | grep -q "\"$WALLET_NAME\""; then
+      "$BITCOIN_CLI" -rpcwait -datadir="$DATADIR" loadwallet "$WALLET_NAME" >/dev/null
     else
-      $CLI -named createwallet wallet_name="$WALLET_NAME" disable_private_keys=false blank=false passphrase="" >/dev/null
+      "$BITCOIN_CLI" -rpcwait -datadir="$DATADIR" -named createwallet wallet_name="$WALLET_NAME" disable_private_keys=false blank=false passphrase="" >/dev/null
     fi
   fi
-
-  # Reuse pinned address from previous run if valid
-  ADDR_FILE="$DATADIR/mining_address"
-  if [[ -f "$ADDR_FILE" ]]; then
-    ADDRESS=$(cat "$ADDR_FILE")
-    if ! $CLI validateaddress "$ADDRESS" | jq -e '.isvalid' >/dev/null 2>&1; then
-      echo "WARN: pinned address invalid, generating new one" >&2
-      ADDRESS=""
-    fi
-  fi
-
-  if [[ -z "$ADDRESS" ]]; then
-    ADDRESS=$($CLI -rpcwallet="$WALLET_NAME" getnewaddress "" "$ADDRESS_TYPE")
-    echo "$ADDRESS" > "$ADDR_FILE"
-  fi
+  ADDRESS=$("$BITCOIN_CLI" -rpcwait -datadir="$DATADIR" -rpcwallet="$WALLET_NAME" getnewaddress "" "$ADDRESS_TYPE")
 fi
 
 maybe_start_peer
 
 echo "Starting CPU miner with $MINER_THREADS thread(s) (~${MINER_CPU_PERCENT}% CPU, max ${MINER_MAX_THREADS})"
 
-MINER_ARGS=(-a sha256d -t "$MINER_THREADS" -o "http://127.0.0.1:$RPC_PORT" -u "$RPC_USER" -p "$RPC_PASS" --coinbase-addr "$ADDRESS" --no-getwork)
+MINER_ARGS=(-a sha256d -t "$MINER_THREADS" -o "http://127.0.0.1:$RPC_PORT" -u "$RPC_USER" -p "$RPC_PASS" --coinbase-addr "$ADDRESS" --no-getwork --no-stratum --scantime 30)
 
 if [[ "$MINER_BACKGROUND" == "1" ]]; then
   LOG_FILE="$DATADIR/miner.log"

@@ -1,0 +1,17 @@
+server=1
+rpcuser=rbtc
+rpcpassword=replace-this-password
+rpcbind=127.0.0.1
+rpcallowip=127.0.0.1
+rpcport=19332
+port=19333
+listen=1
+txindex=1
+dnsseed=0
+addnode=95.111.227.14:19333
+addnode=95.111.239.142:19333
+addnode=161.97.114.192:19333
+addnode=161.97.117.0:19333
+addnode=194.163.144.177:19333
+addnode=185.218.126.23:19333
+addnode=185.239.209.227:19333

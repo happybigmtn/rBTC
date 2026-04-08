@@ -11,14 +11,11 @@ RUN_NODE="${RUN_NODE:-1}"
 RPC_USER="${RPC_USER:-rbtc}"
 RPC_PASS="${RPC_PASS:-}"
 RPC_ALLOWIP="${RPC_ALLOWIP:-127.0.0.1}"
-RPC_BIND="${RPC_BIND:-0.0.0.0}"
+RPC_BIND="${RPC_BIND:-127.0.0.1}"
 SEED_BOOTSTRAP="${SEED_BOOTSTRAP:-1}"
 SEED_PORT="${SEED_PORT:-19333}"
-# Seed nodes for P2P bootstrap — override via SEED_NODES env or seeds.conf
-_SEEDS_CONF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/seeds.conf"
-if [[ -z "${SEED_NODES:-}" && -f "$_SEEDS_CONF" ]]; then
-  SEED_NODES="$(cat "$_SEEDS_CONF")"
-fi
+SEED_SOURCE="${SEED_SOURCE:-public}"
+DEFAULT_PUBLIC_SEED_NODES="95.111.227.14,95.111.239.142,161.97.114.192,161.97.117.0,194.163.144.177,185.218.126.23,185.239.209.227"
 SEED_NODES="${SEED_NODES:-}"
 INSTALL_WRAPPERS="${INSTALL_WRAPPERS:-1}"
 ENFORCE_NETWORK_PATCH_PIN="${ENFORCE_NETWORK_PATCH_PIN:-1}"
@@ -27,6 +24,60 @@ AUTO_RESET_CHAINSTATE="${AUTO_RESET_CHAINSTATE:-1}"
 
 CONF_MANAGED_START="# rbitcoin-install-start"
 CONF_MANAGED_END="# rbitcoin-install-end"
+
+resolve_tailscale_seed_nodes() {
+  if ! command -v tailscale >/dev/null 2>&1; then
+    return 1
+  fi
+
+  python3 - "$SEED_PORT" <<'PY'
+import json
+import socket
+import subprocess
+import sys
+
+port = int(sys.argv[1])
+
+try:
+    status = subprocess.check_output(
+        ["tailscale", "status", "--json"],
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+except Exception:
+    raise SystemExit(1)
+
+try:
+    peers = json.loads(status).get("Peer", {})
+except json.JSONDecodeError:
+    raise SystemExit(1)
+
+reachable = []
+for peer in peers.values():
+    hostname = peer.get("HostName", "")
+    if not hostname.startswith("miner-"):
+        continue
+    if not peer.get("Online", False):
+        continue
+    addresses = peer.get("TailscaleIPs") or []
+    if not addresses:
+        continue
+
+    address = addresses[0]
+    sock = socket.socket()
+    sock.settimeout(1.5)
+    try:
+        sock.connect((address, port))
+    except OSError:
+        continue
+    finally:
+        sock.close()
+    reachable.append((hostname, address))
+
+if reachable:
+    print(",".join(address for _, address in sorted(reachable)))
+PY
+}
 
 stop_existing_local_node() {
   local had_running=0
@@ -72,6 +123,27 @@ wait_for_rpc_ready() {
 
   echo "FAIL: node did not become RPC-ready on datadir=$DATADIR" >&2
   exit 1
+}
+
+ensure_verification_report() {
+  local report_path="$ROOT_DIR/reports/verification-$TAG.json"
+
+  if [[ -f "$report_path" ]]; then
+    return
+  fi
+
+  mkdir -p "$ROOT_DIR/reports"
+  cat > "$report_path" <<EOF
+{
+  "tag": "$TAG",
+  "release_base": "",
+  "keys_url": "",
+  "gpg_signature_valid": false,
+  "artifacts_verified": [],
+  "status": "SKIPPED",
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
 }
 
 find_chain_data_dir() {
@@ -202,6 +274,26 @@ if [[ -z "$RPC_PASS" ]]; then
   fi
 fi
 
+if [[ -z "$SEED_NODES" ]]; then
+  tailscale_seed_nodes=""
+  case "$SEED_SOURCE" in
+    auto|tailscale)
+      tailscale_seed_nodes="$(resolve_tailscale_seed_nodes || true)"
+      ;;
+  esac
+
+  if [[ -n "$tailscale_seed_nodes" ]]; then
+    SEED_NODES="$tailscale_seed_nodes"
+    echo "Using reachable Tailscale miner seeds: $SEED_NODES"
+  elif [[ "$SEED_SOURCE" == "tailscale" ]]; then
+    echo "FAIL: SEED_SOURCE=tailscale requested, but no reachable miner-* Tailscale peers were found on port $SEED_PORT" >&2
+    exit 1
+  else
+    SEED_NODES="$DEFAULT_PUBLIC_SEED_NODES"
+    echo "Using public Contabo seed nodes: $SEED_NODES"
+  fi
+fi
+
 mapfile -t SEED_NODE_ARRAY < <(
   printf '%s\n' "$SEED_NODES" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sed '/^$/d'
 )
@@ -265,19 +357,21 @@ if [[ "$ENFORCE_NETWORK_PATCH_PIN" == "1" ]]; then
 fi
 
 if [[ "$VERIFY" == "1" ]]; then
-  ./scripts/verify_upstream_release.sh "$TAG"
-  ./scripts/enforce_patch_scope.sh ./patch/immutable.patch
+  "$ROOT_DIR/scripts/verify_upstream_release.sh" "$TAG"
+  "$ROOT_DIR/scripts/enforce_patch_scope.sh" "$ROOT_DIR/patch/immutable.patch"
 fi
+
+ensure_verification_report
 
 if [[ "${MOCK_BUILD:-0}" != "1" ]]; then
   stop_existing_local_node
 fi
-./scripts/build_from_tag.sh "$TAG"
-./scripts/make_update_manifest.sh "$TAG"
-./scripts/verify_local_binary.sh ./build/bitcoind ./manifests/manifest-$TAG.json
+"$ROOT_DIR/scripts/build_from_tag.sh" "$TAG"
+"$ROOT_DIR/scripts/make_update_manifest.sh" "$TAG"
+"$ROOT_DIR/scripts/verify_local_binary.sh" "$ROOT_DIR/build/bitcoind" "$ROOT_DIR/manifests/manifest-$TAG.json"
 
 if [[ "$RUN_NODE" == "1" ]]; then
-  ./scripts/run_node.sh --datadir "$DATADIR" --network "$NETWORK"
+  "$ROOT_DIR/scripts/run_node.sh" --datadir "$DATADIR" --network "$NETWORK"
   wait_for_rpc_ready
   check_mainnet_seed_sync
 
@@ -290,7 +384,7 @@ if [[ "$RUN_NODE" == "1" ]]; then
     echo "WARN: detected chainstate corruption warning; resetting chain data and retrying sync."
     stop_node_for_datadir
     reset_chain_data
-    ./scripts/run_node.sh --datadir "$DATADIR" --network "$NETWORK"
+    "$ROOT_DIR/scripts/run_node.sh" --datadir "$DATADIR" --network "$NETWORK"
     wait_for_rpc_ready
     check_mainnet_seed_sync
 
@@ -304,7 +398,7 @@ if [[ "$RUN_NODE" == "1" ]]; then
 fi
 
 if [[ "$START_MINER" == "1" ]]; then
-  ./scripts/start_cpu_miner.sh --datadir "$DATADIR" --network "$NETWORK"
+  "$ROOT_DIR/scripts/start_cpu_miner.sh" --datadir "$DATADIR" --network "$NETWORK"
 fi
 
 if [[ "$INSTALL_WRAPPERS" == "1" ]]; then
@@ -323,6 +417,27 @@ set -euo pipefail
 exec "$ROOT_DIR/build/bitcoind" -datadir="$DATADIR" "\$@"
 EOF
   chmod +x "$HOME/.local/bin/rbtc-bitcoind"
+
+  cat > "$HOME/.local/bin/rbtc-doctor" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+exec "$ROOT_DIR/scripts/doctor.sh" --datadir "$DATADIR" "\$@"
+EOF
+  chmod +x "$HOME/.local/bin/rbtc-doctor"
+
+  cat > "$HOME/.local/bin/rbtc-public-apply" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+exec "$ROOT_DIR/scripts/public-apply.sh" "\$@"
+EOF
+  chmod +x "$HOME/.local/bin/rbtc-public-apply"
+
+  cat > "$HOME/.local/bin/rbtc-start-cpu-miner" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+exec "$ROOT_DIR/scripts/start_cpu_miner.sh" --datadir "$DATADIR" --network "$NETWORK" "\$@"
+EOF
+  chmod +x "$HOME/.local/bin/rbtc-start-cpu-miner"
 fi
 
 echo
@@ -330,4 +445,7 @@ echo "Install complete for rBTC."
 echo "Use: $ROOT_DIR/build/bitcoin-cli -datadir=\"$DATADIR\" getblockcount"
 if [[ "$INSTALL_WRAPPERS" == "1" ]]; then
   echo "Wrapper: $HOME/.local/bin/rbtc-cli getblockcount"
+  echo "Doctor:  $HOME/.local/bin/rbtc-doctor"
+  echo "Public:  $HOME/.local/bin/rbtc-public-apply --address <rbtc-address>"
+  echo "Miner:   $HOME/.local/bin/rbtc-start-cpu-miner"
 fi
